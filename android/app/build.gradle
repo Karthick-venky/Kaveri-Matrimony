@@ -1,0 +1,104 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// Load local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+// Load Flutter version info
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '10'
+def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0.10'
+
+// Load keystore.properties
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.kavery.matrimony.app"
+    compileSdk flutter.compileSdkVersion
+    ndkVersion "29.0.14033849"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        languageVersion = "2.2"
+    }
+
+    kotlin {
+        jvmToolchain(17)
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+        abortOnError = false
+        checkReleaseBuilds = false
+    }
+
+    lintOptions {
+        baseline file("lint-baseline.xml") // or point to that generated baseline
+        abortOnError false
+    }
+
+    defaultConfig {
+        applicationId "com.kavery.matrimony.app"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+
+        // Enable symbol generation for native crashes
+        ndk {
+            debugSymbolLevel = 'FULL'
+        }
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+
+            // ✅ Enable shrinking, obfuscation, and resource shrinking
+            minifyEnabled true
+            shrinkResources true
+
+            // ✅ Make sure ProGuard rules are used
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // ✅ Include symbols for crash reports
+            ndk {
+                debugSymbolLevel = 'FULL'
+            }
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}

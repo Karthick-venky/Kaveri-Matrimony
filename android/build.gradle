@@ -1,0 +1,45 @@
+buildscript {
+    ext.kotlin_version = "2.2.20" // latest stable Kotlin as of Sept 2025
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+
+// Ensure all subprojects write build output into /build
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(':app')
+
+    // Force compileSdkVersion for all Android modules
+    plugins.withType(com.android.build.gradle.BasePlugin) {
+        android {
+            compileSdkVersion 36
+        }
+    }
+
+    // 🔹 Disable unit tests for 3rd-party plugins (e.g. shared_preferences_android)
+    tasks.withType(Test).configureEach {
+        if (!project.name.equals("app")) {
+            enabled = false
+        }
+    }
+}
+
+// Clean task
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
