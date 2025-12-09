@@ -35,6 +35,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../Models/search member id model.dart';
 import 'package:flutter/material.dart';
 
+import '../../other_files/global.dart';
+
 class SearchResultPage extends StatelessWidget {
   final SearchProfileModel profile;
 
@@ -2683,7 +2685,7 @@ class SearchResultPage extends StatelessWidget {
                       ),
 
                       Image.network(
-                        'https://kaverykannadadevangakulamatrimony.com/profile_image/${profile.profile_image}',
+                        '${GlobalVariables.baseUrl}profile_image/${profile.profile_image}',
                         width: 200, // Set the width as needed
                         height: 200, // Set the height as needed
                         fit: BoxFit.cover, // Adjust the fit as needed

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
 
+import '../../other_files/global.dart';
+
 class ContactUS extends StatefulWidget {
   const ContactUS({super.key});
 
@@ -24,8 +26,7 @@ class _ContactUSState extends State<ContactUS> {
 
   Future<void> fetchmembershipdetails() async {
 
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_ship';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/member_ship';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -49,8 +50,7 @@ class _ContactUSState extends State<ContactUS> {
 
   Future<void> fetchcontactdata() async {
 
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/contact_us';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/contact_us';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;

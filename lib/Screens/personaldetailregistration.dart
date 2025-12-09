@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 import '../../Screens/registration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../ApiUtils.dart';
+import '../other_files/api_utils.dart';
 import '../Models/GotraModel.dart';
 import '../Models/KulaModel.dart';
 import '../Models/citizen model.dart';
 import 'package:http/http.dart' as http;
 
+import '../other_files/global.dart';
 import 'astrodetails.dart';
 
 
@@ -168,7 +169,7 @@ String prefferedKulaIdsToJson() {
     } else if (_aboutlifepartnerController.text == "") {
       showCustomBar("Please Enter About Life Partner", Colors.red);
     } else {
-      const apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_temp_register2";
+      final apiUrl = "${GlobalVariables.baseUrl}appadmin/api/member_temp_register2";
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? mobile = prefs.getString("mobile");
@@ -294,8 +295,7 @@ String prefferedKulaIdsToJson() {
 
   Future<void> getPrefferdkula() async {
     try {
-      final url = Uri.parse(
-          'http://kaverykannadadevangakulamatrimony.com/appadmin/api/kula');
+      final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/kula');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -319,7 +319,7 @@ String prefferedKulaIdsToJson() {
   Future<List<PrefferdKula>> getPrefferdkulas() async {
     try {
       final url = Uri.parse(
-          'http://kaverykannadadevangakulamatrimony.com/appadmin/api/kula');
+          '${GlobalVariables.baseUrl}appadmin/api/kula');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -352,8 +352,7 @@ String prefferedKulaIdsToJson() {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? mobile = prefs.getString("mobile");
 
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register2?mobile=${mobile!}');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register2?mobile=${mobile!}');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -679,7 +678,7 @@ String prefferedKulaIdsToJson() {
             padding: const EdgeInsets.all(8.0),
             child: selectedGotra==null?const CircularProgressIndicator(): DropdownButtonFormField<GotraModel>(
               hint: const Text("Mother Gotra"),
-              value: selectedGotra,
+              initialValue: selectedGotra,
               onChanged: (GotraModel? value) {
                 setState(() {
                   selectedGotra = value;
@@ -717,7 +716,7 @@ String prefferedKulaIdsToJson() {
             padding: const EdgeInsets.all(8.0),
             child: selectedKula==null ?const CircularProgressIndicator(): DropdownButtonFormField<KulaModel>(
               hint: const Text("Mother Kula"),
-              value: selectedKula,
+              initialValue: selectedKula,
               onChanged: (KulaModel? value) {
                 setState(() {
                   selectedKula = value;
@@ -808,7 +807,7 @@ String prefferedKulaIdsToJson() {
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<CitizenModel>(
                 hint: const Text("Select citizenship"),
-                value: selectedCitizenship,
+                initialValue: selectedCitizenship,
                 onChanged: (CitizenModel? value) {
                   setState(() {
                     selectedCitizenship = value;
@@ -848,7 +847,7 @@ String prefferedKulaIdsToJson() {
             padding: const EdgeInsets.all(8.0),
             child: DropdownButtonFormField<String>(
               // value: visaOptions[2],
-              value: selectedResidentOptions,
+              initialValue: selectedResidentOptions,
               decoration: InputDecoration(
                 hintText: "Residence Status",
                 border: OutlineInputBorder(

@@ -1,28 +1,21 @@
-// api_utils.dart
 import 'dart:convert';
-
 import 'dart:developer';
-
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-
-
-
-import 'Models/CountryModel.dart';
-import 'Models/GotraModel.dart';
-import 'Models/KulaModel.dart';
-import 'Models/citizen model.dart';
-import 'Models/interested profile model.dart';
-import 'Models/my profile model.dart';
-import 'Models/usermodel.dart';
-import 'Models/view profile model.dart';
-import 'Models/wishlist item models.dart';
+import '../Models/CountryModel.dart';
+import '../Models/GotraModel.dart';
+import '../Models/KulaModel.dart';
+import '../Models/citizen model.dart';
+import '../Models/matched profile model.dart';
+import '../Models/my profile model.dart';
+import '../Models/usermodel.dart';
+import '../Models/view profile model.dart';
+import '../Models/wishlist item models.dart';
+import 'global.dart';
 
 class ApiUtils {
   static Future<List<CitizenModel>> fetchCitizenshipList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/citizenship';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/citizenship';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -36,8 +29,7 @@ class ApiUtils {
   }
 
   static Future<List<CountryModel>> fetchCountryList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/country_of_living';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/country_of_living';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -50,8 +42,7 @@ class ApiUtils {
     return countryList;
   }
   static Future<List<StateModel>> fetchStateList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/state';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/state';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -66,19 +57,18 @@ class ApiUtils {
 
   static Future<List<DistrictModel>> fetchDistrictList() async {
     try {
-      const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/district?state_id=23';
-    final uri = Uri.parse(url);
-    final response = await http.post(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
-    log("json : ${json['district']}");
+      final url = '${GlobalVariables.baseUrl}appadmin/api/district?state_id=23';
+      final uri = Uri.parse(url);
+      final response = await http.post(uri);
+      final body = response.body;
+      final json = jsonDecode(body);
+      log("json : ${json['district']}");
 
-    final stateList = (json['district'] as List<dynamic>).map((country) {
-      return DistrictModel.fromJson(country);
-    }
-    ).toList();
-    return stateList;
+      final stateList = (json['district'] as List<dynamic>).map((country) {
+        return DistrictModel.fromJson(country);
+      }
+      ).toList();
+      return stateList;
     } catch (e) {
       log("error : $e");
       return [];
@@ -86,28 +76,26 @@ class ApiUtils {
   }
 
   static Future<List<GotraModel>> fetchGotraList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/gotra';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/gotra';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
     final json = jsonDecode(body);
     List<dynamic> golist = json['msg'];
     List<GotraModel> gotraList = [];
-    
+
     gotraList.add(GotraModel(englishName: '--select an option--', tamilName: '', id: '0'));
 
-     for(int i=0;i<golist.length;i++)
-       {
-         gotraList.add(GotraModel(englishName: golist[i]['english_name'], tamilName: golist[i]['tamil_name'], id: golist[i]['id']));
-       }
+    for(int i=0;i<golist.length;i++)
+    {
+      gotraList.add(GotraModel(englishName: golist[i]['english_name'], tamilName: golist[i]['tamil_name'], id: golist[i]['id']));
+    }
 
     return gotraList;
   }
 
   static Future<List<KulaModel>> fetchKulaList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/kula';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/kula';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -119,15 +107,9 @@ class ApiUtils {
 
     kulaList.add(KulaModel(englishName: '--select an option--', tamilName: '', id: '0'));
 
-    for(int i=0;i<kllist.length;i++)
-    {
+    for(int i=0;i<kllist.length;i++) {
       kulaList.add(KulaModel(englishName: kllist[i]['english_name'], tamilName: kllist[i]['tamil_name'], id: kllist[i]['id']));
     }
-
-    // final kulaList = (json['msg'] as List<dynamic>).map((kula) {
-    //   return KulaModel.fromJson(kula);
-    // }).toList();
-
     return kulaList;
   }
 
@@ -135,14 +117,16 @@ class ApiUtils {
 }
 
 class ApiService {
-
   Future<List<Map<String, dynamic>>> getMatchedProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String gender = prefs.getString("gender")!;
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/matched_profile?gender=$gender');
+    String memberId = prefs.getString("id")!;
+
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/matched_profile?member_id=$memberId&gender=$gender');
     final response = await http.get(url);
-    log('data : ${response.body}');
+
+    log("getMatchedProfileData URL : $url");
+    log("getMatchedProfileData response : ${response.body}");
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['emp'];
@@ -153,32 +137,42 @@ class ApiService {
   }
 }
 class UserService {
-  Future<List<User>> fetchUserList(String memberId) async {
+  Future<List<ProfileModel>> fetchUserList(String memberId) async {
     final String apiUrl =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/interest_request?member_id=$memberId';
+        '${GlobalVariables.baseUrl}appadmin/api/interest_request?member_id=$memberId';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
+      log("fetchUserList URL : $apiUrl");
+      log("fetchUserList response : ${response.body}");
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body)['Result'];
-        List<User> userList = data.map((userData) {
-          return User.fromJson(userData);
-        }).toList();
-        return userList;
+        final body = json.decode(response.body);
+
+        // If Result is missing or not a list
+        if (body['Result'] == null || body['Result'] is! List) {
+          log("No Result found → returning empty list");
+          return [];
+        }
+
+        final List<dynamic> data = body['Result'];
+
+        return data.where((item) => item != null).map((item) => ProfileModel.fromJson(item)).toList();
       } else {
-        throw Exception('Failed to fetch users');
+        throw Exception('Server returned ${response.statusCode}');
       }
     } catch (error) {
-      throw Exception('Failed to connect to the server');
+      log("Error fetching user list: $error");
+      throw Exception('Failed to connect to the server: $error');
     }
   }
+
 }
 
 
 class ProfileApiService {
-  static const String apiUrl =
-      'http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile';
+  static String apiUrl = '${GlobalVariables.baseUrl}appadmin/api/myprofile';
 
   Future<Profile> fetchProfileData(String memberId) async {
     final url = Uri.parse('$apiUrl?member_id=$memberId');
@@ -209,7 +203,7 @@ class Apiservice {
   Apiservice(this.baseUrl);
 
   Future<bool> updateProfile(UserModel user) async {
-    const String apiUrl = 'http://kaverykannadadevangakulamatrimony.com/appadmin/api/profile_update';
+    String apiUrl = '${GlobalVariables.baseUrl}appadmin/api/profile_update';
 
     try {
       final response = await http.post(
@@ -225,13 +219,13 @@ class Apiservice {
         return true;
       } else {
         // Handle error
-        print('Failed to update profile. Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        log('Failed to update profile. Status code: ${response.statusCode}');
+        log('Response body: ${response.body}');
         return false;
       }
     } catch (e) {
       // Handle exception
-      print('Error updating profile: $e');
+      log('Error updating profile: $e');
       return false;
     }
   }
@@ -287,10 +281,3 @@ class ViewProfileApiService {
     }
   }
 }
-
-
-
-
-
-
-

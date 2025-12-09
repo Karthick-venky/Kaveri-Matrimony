@@ -1,16 +1,13 @@
-// ignore_for_file: prefer_interpolation_to_compose_strings, prefer_if_null_operators, prefer_is_empty, prefer_const_constructors
-
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../../Screens/welcomescreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../other_files/global.dart';
 import 'astrodetails.dart';
 
 class FamilyDetails extends StatefulWidget {
@@ -56,7 +53,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
 
   Future<void> finalregistration() async {
 
-    if(imageFileList!.length==0)
+    if(imageFileList!.isEmpty)
     {
       showCustomBar("Please Select Profile Image", Colors.red);
       return;
@@ -83,8 +80,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
     await prefs.setBool('registerworking',false);
 
 
-    // var request = http.MultipartRequest('POST', Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_signup'));
-    var request = http.MultipartRequest('POST', Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_temp_register4'));
+    var request = http.MultipartRequest('POST', Uri.parse('${GlobalVariables.baseUrl}appadmin/api/member_temp_register4'));
     request.fields.addAll({
       'name': name,
       'mobile': mobile_val,
@@ -170,8 +166,8 @@ class _FamilyDetailsState extends State<FamilyDetails> {
 
     http.StreamedResponse response = await request.send();
     // ✅ PRINT the request URL and JSON structure before sending
-    print('📡 API URL: ${request.url}');
-    print('🧾 JSON Payload: ${request.fields}');
+    log('📡 API URL: ${request.url}');
+    log('🧾 JSON Payload: ${request.fields}');
 
 
     if (response.statusCode == 200) {
@@ -181,7 +177,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
         builder: (context) =>  WelcomeScreen(),
       ));
     } else {
-      print(response.reasonPhrase);
+      log("response.reasonPhrase = ${response.reasonPhrase}");
     }
 
   }
@@ -198,15 +194,14 @@ class _FamilyDetailsState extends State<FamilyDetails> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? mobile = prefs.getString("mobile");
-    print(mobile);
+    log("mobile = $mobile");
 
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register?mobile='+mobile!);
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register?mobile=${mobile!}');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['member_details'];
-      print("first_register"+data.toString());
+      log("first_register$data");
       name = data[0]['name'];
       mobile_val = data[0]['mobile'];
       gender = data[0]['gender'];
@@ -219,10 +214,10 @@ class _FamilyDetailsState extends State<FamilyDetails> {
       dob = data[0]['dob'];
       country_of_living = data[0]['country_of_living'];
       marital_status = data[0]['marital_status'];
-      children = data[0]['children']==null?"":data[0]['children'];
-      livingstatus = data[0]['livingstatus']==null?"":data[0]['livingstatus'];
-      alter_mobile = data[0]['alter_mobile']==null?"":data[0]['alter_mobile'];
-      landline = data[0]['landline_no']==null?"":data[0]['landline_no'];
+      children = data[0]['children'] ?? "";
+      livingstatus = data[0]['livingstatus'] ?? "";
+      alter_mobile = data[0]['alter_mobile'] ?? "";
+      landline = data[0]['landline_no'] ?? "";
     } else {
       throw Exception('Failed to load data');
     }
@@ -235,19 +230,18 @@ class _FamilyDetailsState extends State<FamilyDetails> {
 
     if (mobile == null || mobile.isEmpty) {
       // Handle the case where the mobile number is null or empty
-      print('Mobile number is not available in SharedPreferences');
+      log('Mobile number is not available in SharedPreferences');
       return;
     }
 
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register2?mobile=$mobile');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register2?mobile=$mobile');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body)['member_details'];
-        print("second_register: $data");
+        log("second_register: $data");
         if (data.isNotEmpty) {
           fathereducation = data[0]['fathereducation'];
           foccupation = data[0]['foccupation'];
@@ -267,13 +261,13 @@ class _FamilyDetailsState extends State<FamilyDetails> {
           raddress = data[0]['raddress'];
           pdesc = data[0]['pdesc'];
         } else {
-          print('No member details found.');
+          log('No member details found.');
         }
       } else {
         throw Exception('Failed to load data. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching second register: $e');
+      log('Error fetching second register: $e');
     }
   }
 
@@ -282,8 +276,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? mobile = prefs.getString("mobile");
 
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register3?mobile='+mobile!);
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register3?mobile=${mobile!}');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -296,7 +289,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
       horoscope = data[0]['horoscope'];
       dosam = data[0]['dosam'];
       ddosam = data[0]['ddosam'];
-      dosamdetailsval = data[0]['dosamdetails']==null?"":data[0]['dosamdetails'];
+      dosamdetailsval = data[0]['dosamdetails'] ?? "";
       employedin = data[0]['employedin'];
       education_details = data[0]['education_details'];
       income = data[0]['income'];
@@ -350,11 +343,11 @@ class _FamilyDetailsState extends State<FamilyDetails> {
         });
       }
     }
-    print("Image List Length:" + imageFileList!.length.toString());
+    log("Image List Length:${imageFileList!.length}");
     setState((){});
   }
 
-  File? _image,_image1,_image2;
+  File? _image,_image1;
   String image = "",image1="",image2="";
 
 
@@ -375,16 +368,6 @@ class _FamilyDetailsState extends State<FamilyDetails> {
       image1 = pickedFile!.path.toString();
     });
   }
-
-  Future<void> _pickImage2(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
-
-    setState(() {
-      _image2 = pickedFile != null ? File(pickedFile.path) : null;
-      image2 = pickedFile!.path.toString();
-    });
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +409,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFood,
+                initialValue: selectedFood,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -455,7 +438,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
                     });
                   }
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -493,7 +476,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyDetails,
+                initialValue: selectedFamilyDetails,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -529,7 +512,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyValue,
+                initialValue: selectedFamilyValue,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -565,7 +548,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyType,
+                initialValue: selectedFamilyType,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -629,7 +612,7 @@ class _FamilyDetailsState extends State<FamilyDetails> {
               ),
             ),
             SizedBox(
-              height: imageFileList!.length>0?100:0,
+              height: imageFileList!.isNotEmpty?100:0,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: imageFileList!.length,

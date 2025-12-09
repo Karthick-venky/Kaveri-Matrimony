@@ -1,14 +1,12 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-
 import 'package:google_fonts/google_fonts.dart';
-
-
+import 'global.dart';
 
 class ApiService {
-  static const String baseURL = 'http://kaverykannadadevangakulamatrimony.com/appadmin/api/wishlist';
+  static String baseURL = '${GlobalVariables.baseUrl}appadmin/api/wishlist';
 
   Future<dynamic> getWishlistData(String memberId) async {
     final url = Uri.parse('$baseURL?member_id=$memberId'); // Append the member_id here
@@ -19,8 +17,8 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        print(response.statusCode);
-        print(response.body);
+        log("response.statusCode ${response.statusCode}");
+        log(response.body);
         throw Exception('Failed to load data');
       }
     } catch (e) {
@@ -102,10 +100,10 @@ class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key, required this.memberId});
 
   @override
-  _WishlistScreenState createState() => _WishlistScreenState();
+  WishlistScreenState createState() => WishlistScreenState();
 }
 
-class _WishlistScreenState extends State<WishlistScreen> {
+class WishlistScreenState extends State<WishlistScreen> {
   final ApiService _apiService = ApiService();
   late Future<WishlistItem> _wishlistItem;
 

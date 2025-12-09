@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../activity/Home Screens/myprofile.dart';
 import '../myprofile/height.dart';
 import '../myprofile/weight.dart';
+import '../other_files/global.dart';
 
 class physical extends StatefulWidget {
   final String memberId;
@@ -202,7 +203,7 @@ class _physicalState extends State<physical> {
     String memberId = prefs.getString("id")!;
 
 
-    final url = Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id=$memberId');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id=$memberId');
 
     try {
       final response = await http.get(url);
@@ -257,7 +258,7 @@ class _physicalState extends State<physical> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
 
-    const apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/physical_attribute_update";
+    const apiUrl = "${GlobalVariables.baseUrl}appadmin/api/physical_attribute_update";
 
     final userData = {
       'id': memberId,
@@ -341,14 +342,6 @@ class _physicalState extends State<physical> {
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery
-        .of(context)
-        .size
-        .height;
-    double width = MediaQuery
-        .of(context)
-        .size
-        .width;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -370,10 +363,7 @@ class _physicalState extends State<physical> {
               Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<Height>(
-                value: heights.firstWhere(
-                      (height) => height.displayText == selectedHeight,
-                  orElse: () => heights[0],
-                ),
+                initialValue: heights.firstWhere((height) => height.displayText == selectedHeight, orElse: () => heights[0],),
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -430,7 +420,7 @@ class _physicalState extends State<physical> {
               Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<Weight>(
-                value: selectedWeight ?? weights[0],
+                initialValue: selectedWeight ?? weights[0],
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -472,7 +462,7 @@ class _physicalState extends State<physical> {
               Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedBodyType,
+                initialValue: selectedBodyType,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -515,7 +505,7 @@ class _physicalState extends State<physical> {
               Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedComplexion,
+                initialValue: selectedComplexion,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -558,7 +548,7 @@ class _physicalState extends State<physical> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<String>(
-                  value: selectedPhysicalStatus,
+                  initialValue: selectedPhysicalStatus,
                   decoration: InputDecoration(
                     fillColor: Colors.white,
                     filled: true,
@@ -640,7 +630,7 @@ class _physicalState extends State<physical> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DropdownButtonFormField<String>(
-              value: selectedFood!.isEmpty?"Vegetarian":selectedFood,
+              initialValue: selectedFood!.isEmpty?"Vegetarian":selectedFood,
               decoration: InputDecoration(
                 fillColor: Colors.white,
                 filled: true,

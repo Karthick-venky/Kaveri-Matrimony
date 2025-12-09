@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 class family extends StatefulWidget {
   final String memberId;
@@ -46,7 +47,7 @@ class _familyState extends State<family> {
     log('user id : $memberId');
 
 
-    final url = Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id=$memberId');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id=$memberId');
 
     try {
       final response = await http.get(url);
@@ -100,7 +101,7 @@ class _familyState extends State<family> {
     );
   }
   void updateProfile() async {
-    const apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/family_detail_update";
+    const apiUrl = "${GlobalVariables.baseUrl}appadmin/api/family_detail_update";
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
@@ -174,7 +175,7 @@ class _familyState extends State<family> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyDetails,
+                initialValue: selectedFamilyDetails,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -218,7 +219,7 @@ class _familyState extends State<family> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyValue,
+                initialValue: selectedFamilyValue,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -261,7 +262,7 @@ class _familyState extends State<family> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedFamilyType,
+                initialValue: selectedFamilyType,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,

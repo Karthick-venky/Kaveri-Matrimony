@@ -11,7 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../ApiUtils.dart';
+import '../../Screens/loginScreen.dart';
+import '../../other_files/api_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../Edit myprofile/Add prodile edit myprofile.dart';
@@ -26,10 +27,12 @@ import '../../Edit myprofile/personal details edit myprofile.dart';
 import '../../Edit myprofile/physical edit profile.dart';
 import '../../Models/GotraModel.dart';
 import '../../Models/KulaModel.dart';
-import '../../Models/my profile model.dart';
 import '../../myprofile/moonsigns.dart';
 import '../../myprofile/stars.dart';
+import '../../other_files/global.dart';
+import '../../other_files/loading.dart';
 import '../BottomBar/bottombar.dart';
+import '../common_dialog.dart';
 
 class MyProfile extends StatefulWidget {
   final String memberId;
@@ -42,7 +45,6 @@ class MyProfile extends StatefulWidget {
 }
 
 class _MyProfileState extends State<MyProfile> {
-  final String baseUrl = 'https://kaverykannadadevangakulamatrimony.com';
   List<String> imagePaths = [];
   @override
   void initState() {
@@ -52,11 +54,9 @@ class _MyProfileState extends State<MyProfile> {
     _fetchProfileData();
   }
 
-  final _picker = ImagePicker();
-  Profile? _profile;
   final ProfileApiService apiService = ProfileApiService();
   String member_id = "";
-  // List<dynamic> profileData = [];
+
   List<dynamic> profileData = [];
 
   String final_image = "";
@@ -66,8 +66,7 @@ class _MyProfileState extends State<MyProfile> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     member_id = prefs.getString("id")!.toString();
     print('VICKUY >>>>>${member_id}');
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id=${member_id.toString()}');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id=${member_id.toString()}');
 
     try {
       final response = await http.get(url);
@@ -106,10 +105,71 @@ class _MyProfileState extends State<MyProfile> {
     }
   }
 
-  final TextEditingController _profileImagePathController = TextEditingController();
-  final TextEditingController _horoscopeImagePathController = TextEditingController();
-  final TextEditingController _idProofImagePathController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
+  Future<void> _deleteProfileData(String reason) async {
+    log("Deleting account for reason: $reason");
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final memberId = prefs.getString("id");
+
+      if (memberId == null || memberId.isEmpty) {
+        log("❌ No member_id found in SharedPreferences");
+        return;
+      }
+
+      log("📄 member_id: $memberId");
+
+      final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/deleterequest?member_id=$memberId&reason=$reason',);
+
+      log("🌐 [POST] URL: $url");
+      MyCustomLoading.start(context);
+
+      final response = await http.post(url, headers: {"Content-Type": "application/json"},);
+
+      MyCustomLoading.stop();
+
+      log("📥 [Response Code] ${response.statusCode}");
+      log("📥 [Response Body] ${response.body}");
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+
+        if (jsonResponse is! Map<String, dynamic>) {
+          log("❌ Invalid JSON format (not a Map)");
+          return;
+        }
+
+        final msg = jsonResponse["msg"]?.toString() ?? "Request submitted.";
+
+        /// SHOW SUCCESS POPUP
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: const Text("Delete Request Submitted!"),
+            content: Text(msg),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close dialog
+
+                  // /// Redirect to login and clear all backstack
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const loginScreen()),);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      } else {
+        log("❌ Failed (Status ${response.statusCode})");
+      }
+    } catch (e) {
+      MyCustomLoading.stop();
+      log("❌ [Error] $e");
+    }
+  }
   TextEditingController gotraController = TextEditingController();
   TextEditingController kulaController = TextEditingController();
   TextEditingController profileForController = TextEditingController();
@@ -216,6 +276,17 @@ class _MyProfileState extends State<MyProfile> {
   Uint8List? _image;
   File? selectedIMage;
 
+  final List<String> reasons = [
+    "Select reason",
+    "Found a match",
+    "Not getting expected matches",
+    "Using another matrimony app",
+    "Not interested any more",
+    "Others",
+  ];
+
+  String selectedReason = "Select reason";
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -257,7 +328,7 @@ class _MyProfileState extends State<MyProfile> {
                   Tab(text: "Add profile"),
                   Tab(text: "Add Id"),
                   Tab(text: "Horoscope"),
-                  Tab(text: "Password"),
+                  Tab(text: "Settings"),
                 ],
                 indicatorWeight: 3,
                 labelColor: Color(0xFFDF0A0A),
@@ -3162,7 +3233,7 @@ class _MyProfileState extends State<MyProfile> {
                                 child: final_image == ""
                                     ? Image.asset("assets/user_images.png")
                                     : Image.network(
-                                        'https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image}',
+                                        '${GlobalVariables.baseUrl}profile_image/${final_image}',
                                         height: 300,
                                         errorBuilder: (BuildContext context,
                                             Object exception,
@@ -3172,7 +3243,7 @@ class _MyProfileState extends State<MyProfile> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Image.network(
-                                                'https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image}',
+                                                '${GlobalVariables.baseUrl}profile_image/${final_image}',
                                                 height: 300,
                                               ),
                                             ],
@@ -3186,7 +3257,7 @@ class _MyProfileState extends State<MyProfile> {
                                       child: final_image1 == ""
                                           ? Image.asset("assets/user_images.png")
                                           : Image.network(
-                                              'https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image1}',
+                                              '${GlobalVariables.baseUrl}profile_image/${final_image1}',
                                               height: 200,
                                               errorBuilder: (BuildContext context,
                                                   Object exception,
@@ -3196,7 +3267,7 @@ class _MyProfileState extends State<MyProfile> {
                                                       MainAxisAlignment.center,
                                                   children: [
                                                     Image.network(
-                                                      'https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image1}',
+                                                      '${GlobalVariables.baseUrl}profile_image/${final_image1}',
                                                       height: 200,
                                                     ),
                                                   ],
@@ -3256,7 +3327,7 @@ class _MyProfileState extends State<MyProfile> {
                             Padding(
                               padding: const EdgeInsets.all(80.0),
                               child: Image.network(
-                                'https://kaverykannadadevangakulamatrimony.com/aadhar_image/${profileData[0]['aadhar_image']}',
+                                '${GlobalVariables.baseUrl}aadhar_image/${profileData[0]['aadhar_image']}',
                                 width: 300, // Set the width as needed
                                 height: 200, // Set the height as needed
                                 errorBuilder: (BuildContext context,
@@ -3265,7 +3336,7 @@ class _MyProfileState extends State<MyProfile> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Image.network(
-                                        'https://kaverykannadadevangakulamatrimony.com/aadhar_image/${profileData[0]['aadhar_image']}',
+                                        '${GlobalVariables.baseUrl}aadhar_image/${profileData[0]['aadhar_image']}',
                                         height: 400,
                                       ),
                                     ],
@@ -3322,8 +3393,7 @@ class _MyProfileState extends State<MyProfile> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(80.0),
-                              child: Image.network(
-                                'https://kaverykannadadevangakulamatrimony.com/horoscope_image/${profileData[0]['horoscope_image']}',
+                              child: Image.network('${GlobalVariables.baseUrl}horoscope_image/${profileData[0]['horoscope_image']}',
                                 width: 250, // Set the width as needed
                                 height: 300, // Set the height as needed
                                 fit: BoxFit.cover,
@@ -3332,10 +3402,7 @@ class _MyProfileState extends State<MyProfile> {
                                   return Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Image.network(
-                                        'https://kaverykannadadevangakulamatrimony.com/horoscope_image/${profileData[0]['horoscope_image']}',
-                                        height: 400,
-                                      ),
+                                      Image.network('${GlobalVariables.baseUrl}horoscope_image/${profileData[0]['horoscope_image']}', height: 400,),
                                     ],
                                   );
                                 }, // Adjust the fit as needed
@@ -3426,8 +3493,78 @@ class _MyProfileState extends State<MyProfile> {
                                 ],
                               ),
                             ),
-                            SizedBox(
-                              height: height / 37.8,
+                            SizedBox(height: height / 10),
+                            // Delete My Account
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: width / 18),
+                              child: Text("Delete My Account", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: MyColors.textColor),),
+                            ),
+                            Divider(thickness: 2, color: Colors.black12),
+                            SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: DropdownButtonFormField<String>(
+                                initialValue: selectedReason,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                  labelStyle: TextStyle(
+                                    color: MyColors.textColor,
+                                    fontSize: 15,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: MyColors.textColor, width: 2),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide(color: MyColors.textColor, width: 1),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+
+                                style: TextStyle(color: MyColors.textColor, fontSize: 15,),
+                                menuMaxHeight: 350,
+                                items: reasons.map((reason) {
+                                  return DropdownMenuItem(
+                                    value: reason,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      child: Text(reason, style: TextStyle(color: MyColors.textColor,),),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedReason = value ?? "";
+                                  });
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            // Delete My Account
+                            Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: selectedReason == "Select reason" ? Colors.grey : MyColors.submitBtnColor,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
+                                  minimumSize: const Size(150, 35),
+                                ),
+                                onPressed: () async {
+                                  final shouldDelete = await showCommonDialog(
+                                    context: context,
+                                    title: "Delete My Account",
+                                    message: "Are you sure you want to Delete Your Account?",
+                                    confirmText: "Delete",
+                                    confirmColor: Colors.red,
+                                  );
+                                  log("shouldDelete $shouldDelete");
+                                  if (shouldDelete == true) {
+                                    _deleteProfileData(selectedReason);
+                                  }
+                                },
+                                child: const Text("Delete My Account", style: TextStyle(color: Colors.white),),
+                              ),
                             ),
                           ],
                         )
@@ -3440,21 +3577,6 @@ class _MyProfileState extends State<MyProfile> {
         ),
       ),
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null && picked != DateTime.now()) {
-      setState(() {
-        _dateController.text = "${picked.month}/${picked.day}/${picked.year}";
-      });
-    }
   }
 
   void showImagePickerOption(BuildContext context) {

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../other_files/global.dart';
+
 class MemebrshipPlan extends StatefulWidget {
   const MemebrshipPlan({super.key});
 
@@ -24,8 +26,7 @@ class _MemebrshipPlanState extends State<MemebrshipPlan> {
 
   Future<void> fetchmembershipdetails() async {
 
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_ship';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/member_ship';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -89,15 +90,15 @@ class _MemebrshipPlanState extends State<MemebrshipPlan> {
               const Text("Payment Options",
                 style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20),),
               const SizedBox(height: 10,),
-              Image.network("https://kaverykannadadevangakulamatrimony.com/assets/newimage/$upi_img1",height: 140,),
+              Image.network("${GlobalVariables.baseUrl}assets/newimage/$upi_img1",height: 140,),
               const SizedBox(height: 10,),
               Text("Phone No: $phone",style: const TextStyle(color: Colors.black,fontSize: 20,fontWeight: FontWeight.w500),),
               const SizedBox(height: 10,),
               Text("Name: $name",style: const TextStyle(color: Colors.black,fontSize: 20,fontWeight: FontWeight.w500),),
               const SizedBox(height: 10,),
-              Image.network("https://kaverykannadadevangakulamatrimony.com/assets/newimage/$upi_img2",height: 400,),
+              Image.network("${GlobalVariables.baseUrl}assets/newimage/$upi_img2",height: 400,),
               const SizedBox(height: 10,),
-              Image.network("https://kaverykannadadevangakulamatrimony.com/assets/newimage/$bank_image",height: 200,),
+              Image.network("${GlobalVariables.baseUrl}assets/newimage/$bank_image",height: 200,),
               const SizedBox(height: 10,),
               Text("Name: $name",style: const TextStyle(color: Colors.black,fontSize: 20,fontWeight: FontWeight.w500),),
               const SizedBox(height: 10,),

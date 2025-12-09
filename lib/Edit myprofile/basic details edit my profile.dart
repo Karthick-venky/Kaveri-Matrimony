@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../ApiUtils.dart';
+import '../other_files/api_utils.dart';
 import '../Models/CountryModel.dart';
 import '../Models/GotraModel.dart';
 import '../Models/KulaModel.dart';
@@ -17,6 +17,7 @@ import '../activity/Home Screens/myprofile.dart';
 import '../myprofile/height.dart';
 import '../myprofile/moonsigns.dart';
 import '../myprofile/stars.dart';
+import '../other_files/global.dart';
 
 class basicdetails extends StatefulWidget {
   final String memberId;
@@ -33,7 +34,7 @@ class _basicdetailsState extends State<basicdetails> {
 
 
 
-  final Apiservice apiService = Apiservice('http://kaverykannadadevangakulamatrimony.com/appadmin/api');
+  final Apiservice apiService = Apiservice('${GlobalVariables.baseUrl}appadmin/api');
   final TextEditingController _dateController = TextEditingController();
   TextEditingController gotraController = TextEditingController();
   TextEditingController kulaController = TextEditingController();
@@ -130,10 +131,10 @@ class _basicdetailsState extends State<basicdetails> {
 
   String? noofchildern,childernlivingstatus;
 
-  
-    List<StateModel> stateList = [];
+
+  List<StateModel> stateList = [];
   List<DistrictModel> districtList = [];
-    StateModel? selectedState;
+  StateModel? selectedState;
   DistrictModel? selectedDistrict;
 
   void fetchGotras() async {
@@ -191,35 +192,35 @@ class _basicdetailsState extends State<basicdetails> {
     fetchCountries();
     fetchCitizens();
     _fetchProfileData();
-    fetchState(); 
+    fetchState();
     fetchCountries();
 
 
   }
-   Future<List<DistrictModel>> fetchDistrictList(String id) async {
+  Future<List<DistrictModel>> fetchDistrictList(String id) async {
     try {
       final url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/district?state_id=$id';
-    final uri = Uri.parse(url);
-    final response = await http.post(uri);
-    final body = response.body;
-    final json = jsonDecode(body);
-    log("json : ${json['district']}");
+          '${GlobalVariables.baseUrl}appadmin/api/district?state_id=$id';
+      final uri = Uri.parse(url);
+      final response = await http.post(uri);
+      final body = response.body;
+      final json = jsonDecode(body);
+      log("json : ${json['district']}");
 
-    final stateList = (json['district'] as List<dynamic>).map((country) {
-      return DistrictModel.fromJson(country);
-    }).toList();
-    setState(() {
-districtList=stateList;      
-    });
-    return stateList;
+      final stateList = (json['district'] as List<dynamic>).map((country) {
+        return DistrictModel.fromJson(country);
+      }).toList();
+      setState(() {
+        districtList=stateList;
+      });
+      return stateList;
     } catch (e) {
       log("error : $e");
       return [];
     }
-    
+
   }
-    void fetchState() async {
+  void fetchState() async {
     print("fetchCountries called");
 
     stateList = (await ApiUtils.fetchStateList()).cast<StateModel>();
@@ -245,7 +246,7 @@ districtList=stateList;
     print("fetchcountry completed");
   }
   void updateProfile() async {
-    const apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/profile_update";
+    const apiUrl = "${GlobalVariables.baseUrl}appadmin/api/profile_update";
 
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -264,7 +265,7 @@ districtList=stateList;
       'dob': _dateController.text,
       'marital_status': maritalStatusController.text,
       "children":noofchildern,
-      "livingstatus":childernlivingstatus, 
+      "livingstatus":childernlivingstatus,
       'state': selectedState!.id.toString() ,
       'district': selectedDistrict!.id.toString(),
       // Add other properties here
@@ -318,25 +319,25 @@ districtList=stateList;
   List<dynamic> profileData = [];
 
   Future<void> _fetchProfileData() async {
-log("Api called");
+    log("Api called");
     await Future.delayed(Duration(seconds: 1));
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
-log("1");
+    log("1");
 
 
-    final url = Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id=$memberId');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id=$memberId');
     try {
       final response = await http.get(url);
-log("2");
+      log("2");
 
       if (response.statusCode == 200) {
-log("3");
+        log("3");
 
         var jsonResponse = json.decode(response.body);
-log("4");
-log("jsonResponse : ${jsonResponse}");
+        log("4");
+        log("jsonResponse : ${jsonResponse}");
 
         setState(() {
           log('jsonResponse : ${jsonResponse.toString()}');
@@ -355,16 +356,16 @@ log("jsonResponse : ${jsonResponse}");
             maritalStatusController.text =profileData[0]['marital_status']??"";
             gotraController.text =profileData[0]['gotra']??"";
             kulaController.text =profileData[0]['kula']??"";
-             countryOfLivingController.text = profileData[0]['country_of_living']??"";
+            countryOfLivingController.text = profileData[0]['country_of_living']??"";
 
             if(profileData[0]['marital_status']!="Unmarried")
             {
               childvisible = true;
               noofchildern =  profileData[0]['children']??"";
               if(profileData[0]['livingstatus']!="")
-                {
-                  childernlivingstatus =profileData[0]['livingstatus']??"";
-                }
+              {
+                childernlivingstatus =profileData[0]['livingstatus']??"";
+              }
 
 
 
@@ -390,52 +391,52 @@ log("jsonResponse : ${jsonResponse}");
               }
             }
             if(profileData[0]['country_of_living']!=null)
+            {
+              for(int i=0;i<countries.length;i++)
               {
-                for(int i=0;i<countries.length;i++)
+                if(countries[i].id==profileData[0]['country_of_living'])
                 {
-                  if(countries[i].id==profileData[0]['country_of_living'])
-                  {
-                    selectedCountry =  countries[i];
-                  }
+                  selectedCountry =  countries[i];
                 }
               }
+            }
 
           });
         });
-             log("country : ${profileData[0]['country_of_living']}");
+        log("country : ${profileData[0]['country_of_living']}");
         log("state : ${profileData[0]['state']}");
         log("district : ${profileData[0]['district']}");
-          CountryModel? result = findCountryById(profileData[0]['country_of_living']);
+        CountryModel? result = findCountryById(profileData[0]['country_of_living']);
 
-          if (result != null) {
-            print('Country found: ${result.countryName}');
-            selectedCountry= result;
-          } else {
-            print('Country not found');
-          }
+        if (result != null) {
+          print('Country found: ${result.countryName}');
+          selectedCountry= result;
+        } else {
+          print('Country not found');
+        }
 
-          log('country_of_living : ${profileData[0]['country_of_living']}');
-         
-        if (profileData[0]['country_of_living'].toString()=='1') { 
+        log('country_of_living : ${profileData[0]['country_of_living']}');
+
+        if (profileData[0]['country_of_living'].toString()=='1') {
           log('country checked success');
-            StateModel? result1 = findStateById(profileData[0]['state']);
-          selectedState= result1; 
+          StateModel? result1 = findStateById(profileData[0]['state']);
+          selectedState= result1;
           log('selectedState : ${selectedState}');
           log("DISTRICT DATA 1 : ${result1!.id}");
           List<DistrictModel> districtList =  await fetchDistrictList(result1.id);
           log("DISTRICT DATA 2 : ${districtList.length}");
-         
+
           setState(() {});
-        DistrictModel? result = findDistrictById(profileData[0]['district'],districtList);
+          DistrictModel? result = findDistrictById(profileData[0]['district'],districtList);
 
           log("DISTRICT DATA 3 : ${result!.districtName}");
-            // todo : fetch district
+          // todo : fetch district
           selectedDistrict=result;
           setState(() {});
 
-        } 
+        }
 
-setState(() {});
+        setState(() {});
 
       } else {
         throw Exception('Failed to load profile data');
@@ -445,24 +446,24 @@ setState(() {});
     }
   }
   CountryModel? findCountryById(String id) {
-  return countries.firstWhere(
-    (country) => country.id == id,
-    // orElse: () => null,  
-  );
-}
+    return countries.firstWhere(
+          (country) => country.id == id,
+      // orElse: () => null,
+    );
+  }
   DistrictModel? findDistrictById(String id,List<DistrictModel> districtList44) {
-  return districtList44.firstWhere(
-    (country) => country.id == id,
-    // orElse: () => null,  
-  );
-}
+    return districtList44.firstWhere(
+          (country) => country.id == id,
+      // orElse: () => null,
+    );
+  }
 
   StateModel? findStateById(String id) {
-  return stateList.firstWhere(
-    (state) => state.id == id,
-    // orElse: () => null,  
-  );
-}
+    return stateList.firstWhere(
+          (state) => state.id == id,
+      // orElse: () => null,
+    );
+  }
 
   void showCustomBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -486,7 +487,6 @@ setState(() {});
   @override
   Widget build(BuildContext context) {
     double height=MediaQuery.of(context).size.height;
-    double width=MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -599,7 +599,7 @@ setState(() {});
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField(
-                        value: selectedGender,
+                        initialValue: selectedGender,
                         decoration: InputDecoration(
                           fillColor: Colors.white,
                           filled: true,
@@ -644,7 +644,7 @@ setState(() {});
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField(
-                        value: selectedProfileCreatedBy,
+                        initialValue: selectedProfileCreatedBy,
                         decoration: InputDecoration(
                           fillColor: Colors.white,
                           filled: true,
@@ -691,7 +691,7 @@ setState(() {});
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<GotraModel>(
-                        value: selectedGotra,
+                        initialValue: selectedGotra,
                         onChanged: (GotraModel? value) {
                           setState(() {
                             gotraController.text =
@@ -743,7 +743,7 @@ setState(() {});
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<KulaModel>(
                         hint: const Text("Select Kula"),
-                        value: selectedKula,
+                        initialValue: selectedKula,
                         onChanged: (KulaModel? value) {
                           setState(() {
                             selectedKula = value;
@@ -833,7 +833,7 @@ setState(() {});
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<CountryModel>(
                         hint: const Text("Select country"),
-                        value: selectedCountry,
+                        initialValue: selectedCountry,
                         onChanged: (CountryModel? value) {
                           setState(() {
                             selectedCountry = value;
@@ -877,43 +877,43 @@ setState(() {});
                     SizedBox(
                       height:10,
                     ),
-            //         selectedCountry?.countryName!=null&&  selectedCountry?.countryName=="India" ?
-            // const Padding(
-            //   padding: EdgeInsets.all(10.0),
-            //   child: Text(
-            //     "State of living in *",
-            //     style: TextStyle(
-            //       color: Colors.black,
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.w500,
-            //     ),
-            //   ),
-            // ):SizedBox(),
-            selectedCountry?.countryName!=null&&  selectedCountry?.countryName=="India" ?
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButtonFormField<StateModel>(
-                hint: const Text("State of living in *"),
-                value: selectedState,
-                onChanged: (StateModel? value) {
-                  fetchDistrict(value!.id.toString());
-                  setState(() {
-                    selectedState = value;
-                    // countryOfLivingController.text =
-                    //     value?.id ?? "";
-                  });
-                },
-                items: stateList
-                    .map<DropdownMenuItem<StateModel>>(
-                        (StateModel country) {
-                      return DropdownMenuItem(
-                        value: country,
-                        child: SizedBox(
-                            width: 250,
-                            child: Text(country.stateName)),
-                      );
-                    }).toList(),
-                  decoration: InputDecoration(
+                    //         selectedCountry?.countryName!=null&&  selectedCountry?.countryName=="India" ?
+                    // const Padding(
+                    //   padding: EdgeInsets.all(10.0),
+                    //   child: Text(
+                    //     "State of living in *",
+                    //     style: TextStyle(
+                    //       color: Colors.black,
+                    //       fontSize: 16,
+                    //       fontWeight: FontWeight.w500,
+                    //     ),
+                    //   ),
+                    // ):SizedBox(),
+                    selectedCountry?.countryName!=null&&  selectedCountry?.countryName=="India" ?
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<StateModel>(
+                        hint: const Text("State of living in *"),
+                        initialValue: selectedState,
+                        onChanged: (StateModel? value) {
+                          fetchDistrict(value!.id.toString());
+                          setState(() {
+                            selectedState = value;
+                            // countryOfLivingController.text =
+                            //     value?.id ?? "";
+                          });
+                        },
+                        items: stateList
+                            .map<DropdownMenuItem<StateModel>>(
+                                (StateModel country) {
+                              return DropdownMenuItem(
+                                value: country,
+                                child: SizedBox(
+                                    width: 250,
+                                    child: Text(country.stateName)),
+                              );
+                            }).toList(),
+                        decoration: InputDecoration(
                           fillColor: Colors.white,
                           filled: true,
                           labelText: "State of living in",labelStyle: TextStyle(
@@ -934,44 +934,44 @@ setState(() {});
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-              ),
-            ):SizedBox(),
-            //!
-            //!
-          //  selectedState?.stateName!=null&&  selectedCountry?.countryName=="India"  ?
-          //   const Padding(
-          //     padding: EdgeInsets.all(10.0),
-          //     child: Text(
-          //       "District of living in *",
-          //       style: TextStyle(
-          //         color: Colors.black,
-          //         fontSize: 16,
-          //         fontWeight: FontWeight.w500,
-          //       ),
-          //     ),
-          //   ):SizedBox(),
-           selectedState?.stateName!=null &&  selectedCountry?.countryName=="India" ?
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButtonFormField<DistrictModel>(
-                hint: const Text("District of living in *"),
-                value: selectedDistrict,
-                onChanged: (DistrictModel? value) {
-                  setState(() {
-                    selectedDistrict = value; 
-                  });
-                },
-                items: districtList
-                    .map<DropdownMenuItem<DistrictModel>>(
-                        (DistrictModel country) {
-                      return DropdownMenuItem(
-                        value: country,
-                        child: SizedBox(
-                            width: 250,
-                            child: Text(country.districtName)),
-                      );
-                    }).toList(),
-                 decoration: InputDecoration(
+                      ),
+                    ):SizedBox(),
+                    //!
+                    //!
+                    //  selectedState?.stateName!=null&&  selectedCountry?.countryName=="India"  ?
+                    //   const Padding(
+                    //     padding: EdgeInsets.all(10.0),
+                    //     child: Text(
+                    //       "District of living in *",
+                    //       style: TextStyle(
+                    //         color: Colors.black,
+                    //         fontSize: 16,
+                    //         fontWeight: FontWeight.w500,
+                    //       ),
+                    //     ),
+                    //   ):SizedBox(),
+                    selectedState?.stateName!=null &&  selectedCountry?.countryName=="India" ?
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<DistrictModel>(
+                        hint: const Text("District of living in *"),
+                        initialValue: selectedDistrict,
+                        onChanged: (DistrictModel? value) {
+                          setState(() {
+                            selectedDistrict = value;
+                          });
+                        },
+                        items: districtList
+                            .map<DropdownMenuItem<DistrictModel>>(
+                                (DistrictModel country) {
+                              return DropdownMenuItem(
+                                value: country,
+                                child: SizedBox(
+                                    width: 250,
+                                    child: Text(country.districtName)),
+                              );
+                            }).toList(),
+                        decoration: InputDecoration(
                           fillColor: Colors.white,
                           filled: true,
                           labelText: "District of living in",labelStyle: TextStyle(
@@ -992,12 +992,12 @@ setState(() {});
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-              ),
-            ):SizedBox(),
+                      ),
+                    ):SizedBox(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButtonFormField<String>(
-                        value: selectedMaritalStatus,
+                        initialValue: selectedMaritalStatus,
                         decoration: InputDecoration(
                           fillColor: Colors.white,
                           filled: true,
@@ -1057,7 +1057,7 @@ setState(() {});
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: DropdownButtonFormField(
-                              value: noofchildern,
+                              initialValue: noofchildern,
                               decoration: InputDecoration(
                                 fillColor: Colors.white,
                                 filled: true,
@@ -1115,7 +1115,7 @@ setState(() {});
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: DropdownButtonFormField(
-                              value: childernlivingstatus,
+                              initialValue: childernlivingstatus,
                               decoration: InputDecoration(
                                 fillColor: Colors.white,
                                 filled: true,

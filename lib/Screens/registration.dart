@@ -3,11 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import '../../Screens/personaldetailregistration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../ApiUtils.dart';
+import '../other_files/api_utils.dart';
 import '../Models/CountryModel.dart';
 import '../Models/GotraModel.dart';
 import '../Models/KulaModel.dart';
 import 'package:http/http.dart' as http;
+
+import '../other_files/global.dart';
 
 
 class register_Page extends StatefulWidget {
@@ -50,8 +52,7 @@ class _register_PageState extends State<register_Page> {
 
   Future<List<DistrictModel>> fetchDistrictList(String id) async {
     try {
-      final url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/district?state_id=$id';
+      final url = '${GlobalVariables.baseUrl}appadmin/api/district?state_id=$id';
     final uri = Uri.parse(url);
     final response = await http.post(uri);
     final body = response.body;
@@ -217,9 +218,7 @@ districtList=stateList;
     }
 
     // Proceed with mobile validation
-    final uri = Uri.parse(
-      'https://kaverykannadadevangakulamatrimony.com/appadmin/api/mobile_validation?mobile=${_mobileController.text.trim()}',
-    );
+    final uri = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/mobile_validation?mobile=${_mobileController.text.trim()}',);
 
     try {
       final response1 = await http.get(uri);
@@ -232,7 +231,7 @@ districtList=stateList;
 
         var request = http.Request(
           'POST',
-          Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_profile_temp'),
+          Uri.parse('${GlobalVariables.baseUrl}appadmin/api/member_profile_temp'),
         );
 
         request.bodyFields = {
@@ -308,8 +307,7 @@ districtList=stateList;
     print(registerworking);
     if(registerworking==true)
     {
-      final url = Uri.parse(
-          'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register?mobile=${mobile!}');
+      final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register?mobile=${mobile!}');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -641,7 +639,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField(
-                value: gender,
+                initialValue: gender,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -719,7 +717,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<CountryModel>(
                 hint: const Text("Country of living in *"),
-                value: selectedCountry,
+                initialValue: selectedCountry,
                 onChanged: (CountryModel? value) {
                   setState(() {
                     selectedCountry = value;
@@ -771,7 +769,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<StateModel>(
                 hint: const Text("State of living in *"),
-                value: selectedState,
+                initialValue: selectedState,
                 onChanged: (StateModel? value) {
 
                   setState(() {
@@ -824,7 +822,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<DistrictModel>(
                 hint: const Text("District of living in *"),
-                value: selectedDistrict,
+                initialValue: selectedDistrict,
                 onChanged: selectedState?.stateName != null &&
                     selectedCountry?.countryName == "India"
                     ? (DistrictModel? value) {
@@ -931,7 +929,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField(
-                value: profilecreated,
+                initialValue: profilecreated,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -990,7 +988,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<GotraModel>(
                 hint: const Text("Select Gotra"),
-                value: selectedGotra,
+                initialValue: selectedGotra,
                 onChanged: (GotraModel? value) {
                   setState(() {
                     selectedGotra = value;
@@ -1029,7 +1027,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<KulaModel>(
                 hint: const Text("Select Kula"),
-                value: selectedKula,
+                initialValue: selectedKula,
                 onChanged: (KulaModel? value) {
                   setState(() {
                     selectedKula = value;
@@ -1099,7 +1097,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField(
-                value: martialstatus,
+                initialValue: martialstatus,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
@@ -1175,7 +1173,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: DropdownButtonFormField(
-                      value: noofchildern,
+                      initialValue: noofchildern,
                       decoration: InputDecoration(
                         fillColor: Colors.white,
                         filled: true,
@@ -1234,7 +1232,7 @@ log('selectedGotra : ${selectedGotra?.englishName??"NO"}');
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: DropdownButtonFormField(
-                      value: childernlivingstatus,
+                      initialValue: childernlivingstatus,
                       decoration: InputDecoration(
                         fillColor: Colors.white,
                         filled: true,

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 class Addid extends StatefulWidget {
   final String memberId;
@@ -142,7 +143,7 @@ class _AddidState extends State<Addid> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
 
-    var request = http.MultipartRequest('POST', Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/id_proof'));
+    var request = http.MultipartRequest('POST', Uri.parse('${GlobalVariables.baseUrl}appadmin/api/id_proof'));
     request.fields.addAll({
       'id': memberId
     });

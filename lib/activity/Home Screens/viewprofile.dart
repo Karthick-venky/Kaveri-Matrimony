@@ -1,16 +1,13 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_string_interpolations, sized_box_for_whitespace, prefer_const_literals_to_create_immutables, unused_local_variable, avoid_unnecessary_containers, unnecessary_brace_in_string_interps
-
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import '../../Models/KulaModel.dart';
-import '../../export.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../ApiUtils.dart';
+import '../../other_files/api_utils.dart';
 import '../../Models/view profile model.dart';
+import '../../other_files/global.dart';
 
 class viewProfile extends StatefulWidget {
   final String memberId;
@@ -29,7 +26,7 @@ class _viewProfileState extends State<viewProfile> {
   String ownmember_id = "";
   String final_image1 = "";
 
- List<KulaModel> kulas = [];
+  List<KulaModel> kulas = [];
 
   @override
   void initState() {
@@ -42,20 +39,15 @@ class _viewProfileState extends State<viewProfile> {
   void fetchKulas() async {
     print("fetchKulas called");
     kulas = await ApiUtils.fetchKulaList();
-    // Set the selectedKula if it's null or not part of the items
-    // if (selectedKula == null || !kulas.contains(selectedKula)) {
-    //   selectedKula = kulas.isNotEmpty ? kulas[0] : null;
-    // }
     setState(() {});
-    print("fetchKulas completed");
+    log("fetchKulas completed");
   }
 
   Future<void> fetchintrestedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     ownmember_id = prefs.getString("id")!;
 
-    final apiUrl =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/interest_request?member_id=$ownmember_id';
+    final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/interest_request?member_id=$ownmember_id';
 
     final response = await http.get(Uri.parse(apiUrl));
 
@@ -76,22 +68,16 @@ class _viewProfileState extends State<viewProfile> {
   }
 
   Future<List<ViewProfile>> _fetchViewProfileData() async {
-    final viewProfileApiService = ViewProfileApiService(
-        baseUrl: 'http://kaverykannadadevangakulamatrimony.com/appadmin');
+    final viewProfileApiService = ViewProfileApiService(baseUrl: '${GlobalVariables.baseUrl}appadmin');
     return viewProfileApiService.getViewProfile(widget.memberId);
   }
 
   @override
   Widget build(BuildContext context) {
-    // String dynamicMemberId = widget.member_id;
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFB30000),
-        iconTheme: IconThemeData(
-          color: Colors.white, // Change the color of the back icon here
-        ),
+        iconTheme: IconThemeData(color: Colors.white,),
         title: const Text("View Profile",style: TextStyle(color: Colors.white),),
         centerTitle: true,
       ),
@@ -122,12 +108,10 @@ class _viewProfileState extends State<viewProfile> {
                 unselectedLabelColor: Colors.black,
                 indicatorColor: Color(0xFFDF0A0A),
                 isScrollable: true,
-                labelPadding: EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                ), // Color of the underline indicator
+                labelPadding: EdgeInsets.symmetric(horizontal: 16.0,), // Color of the underline indicator
               ),
             ),
-          
+
             Expanded(
               child: TabBarView(
                 children: [
@@ -139,11 +123,9 @@ class _viewProfileState extends State<viewProfile> {
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(
-                            child: Text('No view profile data found.'));
+                        return Center(child: Text('No view profile data found.'));
                       } else {
-                        final firstProfile = snapshot.data!
-                            .first; // Assuming there's at least one profile
+                        final firstProfile = snapshot.data!.first; // Assuming there's at least one profile
 
                         final profileImage = firstProfile.profile_image;
                         final String finalImage;
@@ -151,8 +133,7 @@ class _viewProfileState extends State<viewProfile> {
                         if (profileImage != "") {
                           int semicolonIndex = profileImage.indexOf(",");
                           if (semicolonIndex != -1) {
-                            finalImage =
-                                profileImage.substring(0, semicolonIndex);
+                            finalImage = profileImage.substring(0, semicolonIndex);
                             final_image1 = profileImage.substring(semicolonIndex+1);
                           } else {
                             finalImage = profileImage;
@@ -168,170 +149,143 @@ class _viewProfileState extends State<viewProfile> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16.0),
-                                          ),
-                                          child: Container(
-                                            padding: EdgeInsets.all(16.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                SizedBox(height: 16.0),
-                                                Container(
-                                                  height: MediaQuery.of(context).size.height - 500,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(10),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Dialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0),),
+                                            child: Container(
+                                              padding: EdgeInsets.all(16.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  SizedBox(height: 16.0),
+                                                  Container(
+                                                    height: MediaQuery.of(context).size.height - 500,
+                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),),
+                                                    child: finalImage == "" ?
+                                                    Image.asset("assets/user_images.png") :
+                                                    PhotoView(imageProvider: NetworkImage('${GlobalVariables.baseUrl}profile_image/$finalImage'),),
                                                   ),
-                                                  child: finalImage == ""
-                                                      ? Image.asset("assets/user_images.png")
-                                                      :
-                                                  PhotoView(
-                                                    imageProvider: NetworkImage('https://kaverykannadadevangakulamatrimony.com/profile_image/${finalImage}'),
+                                                  SizedBox(height: 16.0),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: const Color(0xFFf9fd00),
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0),),
+                                                      minimumSize: const Size(100, 50),
+                                                    ),
+                                                    child: Text('Close'),
                                                   ),
-
-                                                ),
-                                                SizedBox(height: 16.0),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Container(
+                                      height: 150,
+                                      width: 150,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: finalImage == "" ?
+                                      Image.asset("assets/user_images.png") :
+                                      Image.network(
+                                        '${GlobalVariables.baseUrl}profile_image/$finalImage',
+                                        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                          return Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Image.network(
+                                                '${GlobalVariables.baseUrl}profile_image/$finalImage',
+                                                height: 150,
+                                                width: 150,
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  final_image1!=""?
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Dialog(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16.0),
+                                            ),
+                                            child: Container(
+                                              padding: EdgeInsets.all(16.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  SizedBox(height: 16.0),
+                                                  Container(
+                                                    height: MediaQuery.of(context).size.height - 500,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    child: finalImage == "" ? Image.asset("assets/user_images.png") :
+                                                    PhotoView(imageProvider: NetworkImage('${GlobalVariables.baseUrl}profile_image/$final_image1'),),
+                                                  ),
+                                                  SizedBox(height: 16.0),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
                                                       backgroundColor: const Color(0xFFf9fd00),
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius: BorderRadius.circular(5.0),
                                                       ),
                                                       minimumSize: const Size(100, 50),
-                                                     // onPrimary: Colors.black
-                                                  ),
-                                                  child: Text('Close'),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Container(
-                                    height: 150,
-                                    width: 150,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: finalImage == ""
-                                        ? Image.asset("assets/user_images.png")
-                                        : Image.network(
-                                      'https://kaverykannadadevangakulamatrimony.com/profile_image/${finalImage}',
-                                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                        return Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.network(
-                                              'https://kaverykannadadevangakulamatrimony.com/profile_image/${finalImage}',
-                                              height: 150,
-                                              width: 150,
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                final_image1!=""?
-                                GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16.0),
-                                          ),
-                                          child: Container(
-                                            padding: EdgeInsets.all(16.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                SizedBox(height: 16.0),
-                                                Container(
-                                                  height: MediaQuery.of(context).size.height - 500,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child: finalImage == ""
-                                                      ? Image.asset("assets/user_images.png")
-                                                      :
-                                                  PhotoView(
-                                                    imageProvider: NetworkImage('https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image1}'),
-                                                  ),
-
-                                                ),
-                                                SizedBox(height: 16.0),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: const Color(0xFFf9fd00),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(5.0),
+                                                      //onPrimary: Colors.black
                                                     ),
-                                                    minimumSize: const Size(100, 50),
-                                                    //onPrimary: Colors.black
+                                                    child: Text('Close'),
                                                   ),
-                                                  child: Text('Close'),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Container(
-                                    height: 150,
-                                    width: 150,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Container(
+                                      height: 150,
+                                      width: 150,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: final_image1 == "" ?
+                                      Image.asset("assets/user_images.png") :
+                                      Image.network('${GlobalVariables.baseUrl}profile_image/$final_image1',),
                                     ),
-                                    child: final_image1 == ""
-                                        ? Image.asset("assets/user_images.png")
-                                        : Image.network(
-                                      'https://kaverykannadadevangakulamatrimony.com/profile_image/${final_image1}',
-                                    ),
-                                  ),
-                                ):Container()
-                              ],),
+                                  ):Container()
+                                ],),
                               SizedBox(height: 20),
                               SingleChildScrollView(
                                 child: Card(
                                   elevation: 8.0,
                                   child: Container(
                                     width:
-                                        MediaQuery.of(context).size.width * 0.9,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.55,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
+                                    MediaQuery.of(context).size.width * 0.9,
+                                    height: MediaQuery.of(context).size.height * 0.55,
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.0),),
                                     child: SingleChildScrollView(
                                       child: Column(
                                         children: [
                                           Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.08,
+                                            width: MediaQuery.of(context).size.width * 0.9,
+                                            height: MediaQuery.of(context).size.height * 0.08,
                                             color: const Color(0xff006400),
                                             child: Center(
                                               child: Text(
@@ -348,17 +302,17 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width: 130,
                                                   child: Text(
                                                     'NAME',
                                                     style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontWeight: FontWeight.w500,
+                                                      color: Colors.black,
+                                                      fontWeight: FontWeight.w500,
                                                     ),
                                                   ),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -370,11 +324,11 @@ class _viewProfileState extends State<viewProfile> {
                                                 ),
                                                 Expanded(
                                                   child: Text(
-                                                    '${firstProfile.name}',
+                                                    firstProfile.name,
                                                     style: TextStyle(
                                                         color: Colors.red,
                                                         fontWeight:
-                                                            FontWeight.w400),
+                                                        FontWeight.w400),
                                                   ),
                                                 ),
                                               ],
@@ -384,13 +338,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width: 130,
                                                   child: Text(
-                                                      "FATHER'S NAME",style: TextStyle(color: Colors.black,
+                                                    "FATHER'S NAME",style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -402,7 +356,7 @@ class _viewProfileState extends State<viewProfile> {
                                                 ),
                                                 Expanded(
                                                   child: Text(
-                                                      '${firstProfile.fatherName}',style: TextStyle(color: Colors.red,
+                                                    firstProfile.fatherName,style: TextStyle(color: Colors.red,
                                                       fontWeight:FontWeight.w400 ),),
                                                 ),
                                               ],
@@ -412,13 +366,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     "MOTHER'S NAME",style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -430,7 +384,7 @@ class _viewProfileState extends State<viewProfile> {
                                                 ),
                                                 Expanded(
                                                   child: Text(
-                                                      "${firstProfile.motherName}",style: TextStyle(color: Colors.red,
+                                                    firstProfile.motherName,style: TextStyle(color: Colors.red,
                                                       fontWeight:FontWeight.w400 ),),
                                                 ),
                                               ],
@@ -440,13 +394,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'GENDER',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -457,7 +411,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                    "${firstProfile.gender}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.gender,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -466,13 +420,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'PROFILE CREATED BY',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -483,7 +437,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                    "${firstProfile.profileFor}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.profileFor,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -492,13 +446,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'GOTRA',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -510,7 +464,7 @@ class _viewProfileState extends State<viewProfile> {
                                                 ),
                                                 Expanded(
                                                   child: Text(
-                                                      "${firstProfile.gotra_ename} / ${firstProfile.gotra_tname}",style: TextStyle(color: Colors.red,
+                                                    "${firstProfile.gotra_ename} / ${firstProfile.gotra_tname}",style: TextStyle(color: Colors.red,
                                                       fontWeight:FontWeight.w400 ),),
                                                 ),
                                               ],
@@ -520,13 +474,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'KULA',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -548,13 +502,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'DATE OF BIRTH',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -565,7 +519,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                    "${firstProfile.dateofbirth}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.dateofbirth,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -574,13 +528,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'COUNTRY OF LIVING IN',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -591,7 +545,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                    "${firstProfile.countryOfLiving}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.countryOfLiving,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -600,13 +554,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'MARITAL STATUS',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -617,7 +571,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                    "${firstProfile.maritalStatus}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.maritalStatus,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -626,13 +580,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'CHILDERN',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -643,7 +597,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${firstProfile.children}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.children,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -652,13 +606,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'CHILDERN LIVING STATUS',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -669,7 +623,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${firstProfile.livingStatus}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.livingStatus,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -678,13 +632,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'DOSAM',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -695,7 +649,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${firstProfile.dosam}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.dosam,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -704,13 +658,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'DOSAM DETAILS',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -721,7 +675,7 @@ class _viewProfileState extends State<viewProfile> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${firstProfile.ddosam}",style: TextStyle(color: Colors.red,
+                                                  firstProfile.ddosam,style: TextStyle(color: Colors.red,
                                                     fontWeight:FontWeight.w400 ),),
                                               ],
                                             ),
@@ -730,13 +684,13 @@ class _viewProfileState extends State<viewProfile> {
                                             padding: EdgeInsets.all(18.0),
                                             child: Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:130,
                                                   child: Text(
                                                     'DOSAM DETAILS',style: TextStyle(color: Colors.black,
                                                       fontWeight:FontWeight.w500 ),),
                                                 ),
-                                                Container(
+                                                SizedBox(
                                                   width: 10,
                                                   child: Text(
                                                     ': ',
@@ -748,7 +702,7 @@ class _viewProfileState extends State<viewProfile> {
                                                 ),
                                                 Expanded(
                                                   child: Text(
-                                                    "${firstProfile.dosamdetails}",style: TextStyle(color: Colors.red,
+                                                    firstProfile.dosamdetails,style: TextStyle(color: Colors.red,
                                                       fontWeight:FontWeight.w400 ),),
                                                 ),
                                               ],
@@ -780,977 +734,542 @@ class _viewProfileState extends State<viewProfile> {
                       } else {
                         final firstProfile = snapshot.data!
                             .first; // Assuming there's at least one profile
-                            log("main data : ${firstProfile}");
-                            
-                            final  fKula =firstProfile.preffered_kulla ;
-                             List<String> kullaIds = fKula.split(',');
-                             List<String> englishNames = [];
-                             List<String> tamilNames = [];
+                        log("main data : $firstProfile");
+
+                        final  fKula =firstProfile.preffered_kulla ;
+                        List<String> kullaIds = fKula.split(',');
+                        List<String> englishNames = [];
+                        List<String> tamilNames = [];
 
 
-                                for (String id in kullaIds) {
-      KulaModel? matchingKula = kulas.firstWhere(
-        (kula) => kula.id == id,
-        orElse: () => KulaModel(id: '', englishName: '', tamilName: ''),
-      );
+                        for (String id in kullaIds) {
+                          KulaModel? matchingKula = kulas.firstWhere(
+                                (kula) => kula.id == id,
+                            orElse: () => KulaModel(id: '', englishName: '', tamilName: ''),
+                          );
 
-      if (matchingKula.id.isNotEmpty) {
-        englishNames.add(matchingKula.englishName);
-        tamilNames.add(matchingKula.tamilName);
-      }
-    }
+                          if (matchingKula.id.isNotEmpty) {
+                            englishNames.add(matchingKula.englishName);
+                            tamilNames.add(matchingKula.tamilName);
+                          }
+                        }
 
-                        return Container(
-                          child: Center(
-                            child: ListView.builder(
-                                itemCount: 1,
-                                itemBuilder: (_, index) {
-                                 
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 50),
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          elevation: 8.0,
-                                          child: Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.7,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.9,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.08,
-                                                    color:
-                                                        const Color(0xFF006400),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        "Personal Details",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 24,
-                                                        ),
+                        return Center(
+                          child: ListView.builder(
+                              itemCount: 1,
+                              itemBuilder: (_, index) {
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 50),
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                        elevation: 8.0,
+                                        child: Container(
+                                          width: MediaQuery.of(context)
+                                              .size
+                                              .width *
+                                              0.9,
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height *
+                                              0.7,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            BorderRadius.circular(10.0),
+                                          ),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  width:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                      0.9,
+                                                  height:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                      0.08,
+                                                  color:
+                                                  const Color(0xFF006400),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Personal Details",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 24,
                                                       ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "FATHER'S EDUCATION",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.fatherEducation}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "FATHER'S OCCUPATION",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                            child: Text(
-                                                                "${firstProfile.fOccupation}",style: TextStyle(color: Colors.red,
-                                                                fontWeight:FontWeight.w400 ),)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "MOTHER'S EDUCATION",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.mEducation}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "MOTHER'S OCCUPATION",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.mOccupation}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),
-                                                            overflow: TextOverflow.ellipsis,),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "MOTHER'S GOTRA",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.mothergotra_ename} / ${firstProfile.mothergotra_tname}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "MOTHER'S KULA",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.motherkula_tname} / ${firstProfile.motherkula_ename}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "BROTHER'S",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.bro}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "SISTER'S",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.sis}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "CITIZENSHIP",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.citizenship_name}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "RESIDENT STATUS",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.residentstatus}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(  
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "RESIDENT STATE",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            firstProfile.state_name.toString() ,style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(  
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "RESIDENT DISTRICT",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            firstProfile.district_name.toString() ,style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "RESIDENT CITY",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.city}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "PROFILE DESCRIPTION",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.pdesc}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "ABOUT LIFE PARTNER",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.lifepartner}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "PREFFERED KULA",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${ englishNames.join(', ')}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 20,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  FutureBuilder<List<ViewProfile>>(
-                    future: _viewProfileFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(
-                            child: Text('No view profile data found.'));
-                      } else {
-                        final firstProfile = snapshot.data!
-                            .first; // Assuming there's at least one profile
-
-                        return Container(
-                          child: Center(
-                            child: ListView.builder(
-                                itemCount: 1,
-                                itemBuilder: (_, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 50),
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          elevation: 8.0,
-                                          child: Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.5,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.9,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.08,
-                                                    color:
-                                                        const Color(0xff006400),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        "Education & Occupation Details",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 20,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "EMPLOYED IN",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.employedin}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "INCOME",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                            "${firstProfile.income}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                    EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "PER",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "${firstProfile.per}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "OCCUATION DETAILS",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.occupation_details}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            "EDUCATION DETAILS",style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                              "${firstProfile.education_details}",style: TextStyle(color: Colors.red,
-                                                              fontWeight:FontWeight.w400 ),),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  FutureBuilder<List<ViewProfile>>(
-                    future: _viewProfileFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(
-                            child: Text('No view profile data found.'));
-                      } else {
-                        final firstProfile = snapshot.data!
-                            .first; // Assuming there's at least one profile
-
-                        return Container(
-                          child: Center(
-                            child: ListView.builder(
-                                itemCount: 1,
-                                itemBuilder: (_, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 20),
-                                    child: Column(
-                                      children: [
-                                        inresteIdList.contains(widget.memberId)
-                                            ? Container(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.9,
-                                                height: 250,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                  color: Colors.green,
                                                 ),
-                                                child: Padding(
+                                                Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                          top: 20,
-                                                          left: 10,
-                                                          right: 10),
-                                                  child: Column(
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
                                                     children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "FATHER'S EDUCATION",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
                                                       Text(
-                                                        "உங்கள் விருப்பம் சமர்ப்பிக்கப்பட்டது. ",
-                                                        style: TextStyle(
-                                                          fontSize: 20,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
+                                                        firstProfile.fatherEducation,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "FATHER'S OCCUPATION",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                          child: Text(
+                                                            firstProfile.fOccupation,style: TextStyle(color: Colors.red,
+                                                              fontWeight:FontWeight.w400 ),)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "MOTHER'S EDUCATION",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.mEducation,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "MOTHER'S OCCUPATION",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.mOccupation,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),
+                                                        overflow: TextOverflow.ellipsis,),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "MOTHER'S GOTRA",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
                                                         ),
                                                       ),
                                                       Expanded(
                                                         child: Text(
-                                                          "விரைவில் ஜாதகம் மற்றும் குடும்ப விபரங்கள் உங்கள் பதிவு எண்ணில் தெரிவிக்கப்படும் நன்றி !",
-                                                          style: TextStyle(
-                                                            fontSize: 20,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
+                                                          "${firstProfile.mothergotra_ename} / ${firstProfile.mothergotra_tname}",style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
-                                              )
-                                            : Container(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.9,
-                                                height: 250,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                  color: Colors.green,
-                                                ),
-                                                child: Padding(
+                                                Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                          top: 20),
-                                                  child: Column(
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
                                                     children: [
-                                                      const Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "If you want to get ",
-                                                            style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                top: 10,
-                                                                right: 10),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              "Astrological Details",
-                                                              style: TextStyle(
-                                                                  fontSize: 20,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  color: Colors
-                                                                      .white),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "Please Click  ",
-                                                            style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                top: 20),
-                                                        child: Icon(
-                                                          Icons.download,
-                                                          size: 30,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(top: 10),
-                                                        child: ElevatedButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              // a = 1;
-                                                              // b = 0;
-
-                                                              sendIntrestStatus(
-                                                                member_id:
-                                                                    ownmember_id,
-                                                                profile_id: widget
-                                                                    .memberId,
-                                                              );
-                                                            });
-                                                          },
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Color(
-                                                                    0xFFB30000),
-                                                            shape:
-                                                                RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10.0),
-                                                            ),
-                                                            minimumSize:
-                                                                Size(150, 50),
-                                                          ),
-                                                          child: Text(
-                                                            "INTREST",
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                color: Colors.white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500),
-                                                          ),
-                                                        ),
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "MOTHER'S KULA",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
                                                       ),
                                                       SizedBox(
-                                                        height: 20,
-                                                      )
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          "${firstProfile.motherkula_tname} / ${firstProfile.motherkula_ename}",style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
-                                              ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "BROTHER'S",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.bro,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "SISTER'S",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.sis,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "CITIZENSHIP",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.citizenship_name,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "RESIDENT STATUS",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.residentstatus,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "RESIDENT STATE",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.state_name.toString() ,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "RESIDENT DISTRICT",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.district_name.toString() ,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "RESIDENT CITY",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.city,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "PROFILE DESCRIPTION",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.pdesc,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "ABOUT LIFE PARTNER",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.lifepartner,style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "PREFFERED KULA",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          englishNames.join(', '),style: TextStyle(color: Colors.red,
+                                                            fontWeight:FontWeight.w400 ),),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
                         );
                       }
                     },
@@ -1769,244 +1288,402 @@ class _viewProfileState extends State<viewProfile> {
                         final firstProfile = snapshot.data!
                             .first; // Assuming there's at least one profile
 
-                        return Container(
-                          child: Center(
-                            child: ListView.builder(
-                                itemCount: 1,
-                                itemBuilder: (_, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 50),
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          elevation: 8.0,
-                                          child: Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.5,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.9,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.08,
-                                                    color:
-                                                        const Color(0xff006400),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        "Physical Attributes & Details",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 20,
-                                                        ),
+                        return Center(
+                          child: ListView.builder(
+                              itemCount: 1,
+                              itemBuilder: (_, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 50),
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                        elevation: 8.0,
+                                        child: Container(
+                                          width: MediaQuery.of(context)
+                                              .size
+                                              .width *
+                                              0.9,
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height *
+                                              0.5,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            BorderRadius.circular(10.0),
+                                          ),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  width:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                      0.9,
+                                                  height:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                      0.08,
+                                                  color:
+                                                  const Color(0xff006400),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Education & Occupation Details",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 20,
                                                       ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'HEIGHT',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "EMPLOYED IN",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.height}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.employedin,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'WEIGHT',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "INCOME",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.weight}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.income,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'BODY TYPE',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "PER",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.bodytype}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.per,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                  SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'COMPLEXION',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "OCCUATION DETAILS",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.complexion}",style: TextStyle(color: Colors.red,
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.occupation_details,style: TextStyle(color: Colors.red,
                                                             fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'PHYSICAL STATUS',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          "EDUCATION DETAILS",style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.physically}",style: TextStyle(color: Colors.red,
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          firstProfile.education_details,style: TextStyle(color: Colors.red,
                                                             fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                        );
+                      }
+                    },
+                  ),
+                  FutureBuilder<List<ViewProfile>>(
+                    future: _viewProfileFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text('No view profile data found.'));
+                      } else {
+// Assuming there's at least one profile
+                        return Center(
+                          child: ListView.builder(
+                              itemCount: 1,
+                              itemBuilder: (_, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 20),
+                                  child: Column(
+                                    children: [
+                                      inresteIdList.contains(widget.memberId) ?
+                                      Container(
+                                        width: MediaQuery.of(context).size.width * 0.9,
+                                        height: 250,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10.0),
+                                          color: Colors.green,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "உங்கள் விருப்பம் சமர்ப்பிக்கப்பட்டது. ",
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight:
+                                                  FontWeight.w500,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  "விரைவில் ஜாதகம் மற்றும் குடும்ப விபரங்கள் உங்கள் பதிவு எண்ணில் தெரிவிக்கப்படும் நன்றி !",
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                    FontWeight.w500,
+                                                    color: Colors.white,
                                                   ),
-                                                   Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'FOOD',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text("${firstProfile.food}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ) :
+                                      Container(
+                                        width: MediaQuery.of(context).size.width * 0.9,
+                                        height: 250,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                          BorderRadius.circular(
+                                              10.0),
+                                          color: Colors.green,
+                                        ),
+                                        child: Padding(
+                                          padding:
+                                          const EdgeInsets.only(
+                                              top: 20),
+                                          child: Column(
+                                            children: [
+                                              const Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .center,
+                                                children: [
+                                                  Text(
+                                                    "If you want to get ",
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                      FontWeight
+                                                          .w500,
+                                                      color:
+                                                      Colors.white,
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                            ),
+                                              Padding(
+                                                padding:
+                                                EdgeInsets.only(
+                                                    top: 10,
+                                                    right: 10),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    Text(
+                                                      "Astrological Details",
+                                                      style: TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                          FontWeight
+                                                              .w500,
+                                                          color: Colors
+                                                              .white),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .center,
+                                                children: [
+                                                  Text(
+                                                    "Please Click  ",
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                      FontWeight
+                                                          .w500,
+                                                      color:
+                                                      Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const Padding(
+                                                padding:
+                                                EdgeInsets.only(
+                                                    top: 20),
+                                                child: Icon(
+                                                  Icons.download,
+                                                  size: 30,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                const EdgeInsets
+                                                    .only(top: 10),
+                                                child: ElevatedButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      // a = 1;
+                                                      // b = 0;
+
+                                                      sendIntrestStatus(
+                                                        member_id:
+                                                        ownmember_id,
+                                                        profile_id: widget
+                                                            .memberId,
+                                                      );
+                                                    });
+                                                  },
+                                                  style: ElevatedButton
+                                                      .styleFrom(
+                                                    backgroundColor:
+                                                    Color(
+                                                        0xFFB30000),
+                                                    shape:
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius
+                                                          .circular(
+                                                          10.0),
+                                                    ),
+                                                    minimumSize:
+                                                    Size(150, 50),
+                                                  ),
+                                                  child: Text(
+                                                    "INTREST",
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .w500),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 20,
+                                              )
+                                            ],
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
                         );
                       }
                     },
@@ -2025,164 +1702,416 @@ class _viewProfileState extends State<viewProfile> {
                         final firstProfile = snapshot.data!
                             .first; // Assuming there's at least one profile
 
-                        return Container(
-                          child: Center(
-                            child: ListView.builder(
-                                itemCount: 1,
-                                itemBuilder: (_, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 50),
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          elevation: 8.0,
-                                          child: Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.5,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width *
-                                                            0.9,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.08,
-                                                    color:
-                                                        const Color(0xff006400),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        "Family Details",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 20,
-                                                        ),
+                        return Center(
+                          child: ListView.builder(
+                              itemCount: 1,
+                              itemBuilder: (_, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 50),
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                        elevation: 8.0,
+                                        child: Container(
+                                          width: MediaQuery.of(context)
+                                              .size
+                                              .width *
+                                              0.9,
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height *
+                                              0.5,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            BorderRadius.circular(10.0),
+                                          ),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  width:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                      0.9,
+                                                  height:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                      0.08,
+                                                  color:
+                                                  const Color(0xff006400),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Physical Attributes & Details",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 20,
                                                       ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'FAMILY VALUE',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'HEIGHT',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.familyvalue}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.height,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'FAMILY STATUS',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'WEIGHT',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.familystatus}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.weight,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.all(18.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width:130,
-                                                          child: Text(
-                                                            'FAMILY TYPE',style: TextStyle(color: Colors.black,
-                                                              fontWeight:FontWeight.w500 ),),
-                                                        ),
-                                                        Container(
-                                                          width: 10,
-                                                          child: Text(
-                                                            ': ',
-                                                            style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'BODY TYPE',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
-                                                        Text(
-                                                            "${firstProfile.familytype}",style: TextStyle(color: Colors.red,
-                                                            fontWeight:FontWeight.w400 ),),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.bodytype,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                                SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'COMPLEXION',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.complexion,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'PHYSICAL STATUS',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.physically,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'FOOD',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(firstProfile.food,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
                         );
                       }
                     },
                   ),
-          
+                  FutureBuilder<List<ViewProfile>>(
+                    future: _viewProfileFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                            child: Text('No view profile data found.'));
+                      } else {
+                        final firstProfile = snapshot.data!
+                            .first; // Assuming there's at least one profile
+
+                        return Center(
+                          child: ListView.builder(
+                              itemCount: 1,
+                              itemBuilder: (_, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 50),
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                        elevation: 8.0,
+                                        child: Container(
+                                          width: MediaQuery.of(context)
+                                              .size
+                                              .width *
+                                              0.9,
+                                          height: MediaQuery.of(context)
+                                              .size
+                                              .height *
+                                              0.5,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                            BorderRadius.circular(10.0),
+                                          ),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  width:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                      0.9,
+                                                  height:
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                      0.08,
+                                                  color:
+                                                  const Color(0xff006400),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Family Details",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 20,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'FAMILY VALUE',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.familyvalue,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'FAMILY STATUS',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.familystatus,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  EdgeInsets.all(18.0),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:130,
+                                                        child: Text(
+                                                          'FAMILY TYPE',style: TextStyle(color: Colors.black,
+                                                            fontWeight:FontWeight.w500 ),),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                        child: Text(
+                                                          ': ',
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        firstProfile.familytype,style: TextStyle(color: Colors.red,
+                                                          fontWeight:FontWeight.w400 ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                        );
+                      }
+                    },
+                  ),
+
                 ],
               ),
             ),
-      
+
           ],
         ),
       ),
@@ -2193,8 +2122,7 @@ class _viewProfileState extends State<viewProfile> {
     required String member_id,
     required String profile_id,
   }) async {
-    const apiUrl =
-        'https://kaverykannadadevangakulamatrimony.com/appadmin/api/add_interest';
+    final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/add_interest';
 
     final Map<String, dynamic> body = {
       'member_id': member_id,

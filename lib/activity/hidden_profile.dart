@@ -1,59 +1,33 @@
-// ignore_for_file: prefer_const_constructors, prefer_if_null_operators, sized_box_for_whitespace, avoid_unnecessary_containers
-
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../other_files/common_snackbar.dart';
-import '../../other_files/global.dart';
-import '../../other_files/loading.dart';
-import '../../other_files/profile_service.dart';
-import '../BottomBar/bottombar.dart';
-import '../Home Screens/viewprofile.dart';
+import '../other_files/common_snackbar.dart';
+import '../other_files/global.dart';
+import '../other_files/loading.dart';
+import '../other_files/profile_service.dart';
+import 'Home Screens/viewprofile.dart';
+import 'common_dialog.dart';
 
-class intrestedScreen extends StatefulWidget {
-  const intrestedScreen({super.key});
+
+class HiddenProfileScreen extends StatefulWidget {
+  const HiddenProfileScreen({super.key});
 
   @override
-  State<intrestedScreen> createState() => _intrestedScreenState();
+  State<HiddenProfileScreen> createState() => _HiddenProfileScreenState();
 }
 
-class _intrestedScreenState extends State<intrestedScreen> {
-  List<dynamic> intrestList = [];
+class _HiddenProfileScreenState extends State<HiddenProfileScreen> {
+  List<dynamic> hiddenList = [];
 
-  String member_id = "";
+  String memberId = "";
 
   @override
   void initState() {
     super.initState();
-    fetchIntrestList();
-  }
-
-  Future<void> fetchIntrestList() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    member_id = prefs.getString("id")!;
-    log('member_id: $member_id');
-
-    final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/interest_request?member_id=$member_id';
-    print(apiUrl);
-    final response = await http.get(Uri.parse(apiUrl));
-    log('jsonDataone :${response.body}');
-
-    if (response.statusCode == 200) {
-      final dynamic jsonData = json.decode(response.body);
-      log('jsonDataone :$jsonData');
-
-      setState(() {
-        intrestList = jsonData['Result'];
-        log('intrestList : $intrestList');
-      });
-    } else {
-      throw Exception(
-          'Failed to load employee data. Status code: ${response.statusCode}');
-    }
+    fetchHiddenList();
   }
 
   Future<void> hideProfile({required String loginMemberId, required String profileId,}) async {
@@ -64,32 +38,81 @@ class _intrestedScreenState extends State<intrestedScreen> {
 
     if (result["status"] == true) {
       CommonSnackBar.show(context, message: result["msg"], backgroundColor: Colors.green,);
-      fetchIntrestList();
+      fetchHiddenList();
     } else {
       CommonSnackBar.show(context, message: result["msg"] ?? "Failed", backgroundColor: Colors.red,);
     }
   }
+
+
+  Future<void> fetchHiddenList() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      memberId = prefs.getString("id") ?? "";
+
+      if (memberId.isEmpty) {
+        log("❌ No member_id found in SharedPreferences");
+        return;
+      }
+
+      final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/hiddenprofilelist';
+
+      log("🌐 [POST] URL: $apiUrl");
+      log("📌 [POST] member_id: $memberId");
+
+      MyCustomLoading.start(context);
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        body: {"member_id": memberId},
+      );
+
+      log("📥 [STATUS]: ${response.statusCode}");
+      log("📥 [RAW RESPONSE]: ${response.body}");
+
+      MyCustomLoading.stop();
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        log("📦 [DECODED JSON]: $data");
+
+        setState(() {
+          hiddenList = data['Result'] ?? [];
+        });
+
+        log("📍 Updated Hidden List: $hiddenList");
+      } else {
+        throw Exception("Failed to load data. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      MyCustomLoading.stop();
+      log("❌ [ERROR in fetchHiddenList]: $e");
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    return Container(
+    final textColor = Colors.red;
+    return SafeArea(
+      top: false,
       child: Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white,),
-          backgroundColor: const Color(0xFFB30000),
-          title: const Text("INTERESTED PROFILE", style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white),),
           centerTitle: true,
+          backgroundColor: MyColors.appBarColor,
+          iconTheme: IconThemeData(color: Colors.white),
+          title: const Text("HIDDEN PROFILE", style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white),),
         ),
-        bottomNavigationBar: BottomBar(index: 3),
-        body: intrestList.isEmpty ?
-        Center(child: Text('No data Available'),) :
+        body: hiddenList.isEmpty ? Center(child: Text('No data Available'),) :
         ListView.builder(
-          itemCount: intrestList.length,
+          itemCount: hiddenList.length,
           itemBuilder: (_, index) {
-            final intresting = intrestList[index];
+            final intresting = hiddenList[index];
             log("intresting : $intresting");
             final profileImage = intresting['profile_image'];
-            final finalImage;
+            var finalImage = "";
             if (profileImage != "") {
               int semicolonIndex = profileImage.indexOf(",");
               if (semicolonIndex != -1) {
@@ -127,9 +150,13 @@ class _intrestedScreenState extends State<intrestedScreen> {
                               Container(
                                 width: 70,
                                 height: 100,
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 child: finalImage == "" ?
-                                Image.asset("assets/user_images.png") : Image.network('${GlobalVariables.baseUrl}profile_image/$finalImage', fit: BoxFit.cover,),
+                                Image.asset("assets/user_images.png") :
+                                Image.network('${GlobalVariables.baseUrl}profile_image/$finalImage', fit: BoxFit.cover,
+                                ),
                               )
                             ],
                           ),
@@ -144,7 +171,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: 150,
                                     child: Text(
                                       intresting['name'] ?? "",
@@ -152,7 +179,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.normal,
-                                        color: Colors.red,
+                                        color: textColor
                                       ),
                                     ),
                                   ),
@@ -167,17 +194,15 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 2,),
+                              SizedBox(
+                                height: 2,
+                              ),
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: 150,
                                     child: Text(
-                                      intresting['countryofliving'] ==
-                                          null
-                                          ? ""
-                                          : intresting[
-                                      'countryofliving'],
+                                      intresting['countryofliving'] ?? "",
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 16,
                                         color: Colors.orange,
@@ -187,10 +212,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                     ),
                                   ),
                                   Text(
-                                    intresting['marital_status'] ==
-                                        "Unmarried"
-                                        ? ""
-                                        : "மறுமணம்",
+                                    intresting['marital_status'] == "Unmarried" ? "" : "மறுமணம்",
                                     style: GoogleFonts.nunitoSans(
                                       fontSize: 14,
                                       color: Colors.green,
@@ -213,13 +235,13 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: width / 2.2,
                                     child: Text(
                                       intresting['education_details']??'-',
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Color(0xFFFE0808),
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -239,15 +261,13 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: width / 2,
                                     child: Text(
-                                      intresting[
-                                      'occupation_details'] ??
-                                          "-",
+                                      intresting['occupation_details'] ?? "-",
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Color(0xFFFE0808),
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -271,24 +291,22 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
-                                    child: Text(
-                                      intresting['income'] ?? "-",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFFFE0808),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    intresting['income'] ?? "-",
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      color: textColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: width / 6,
                                     child: Text(
                                       intresting['per'] ?? "",
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Color(0xFFFE0808),
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -296,6 +314,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                   ),
                                 ],
                               ),
+
 
                               Row(
                                 mainAxisAlignment:
@@ -315,7 +334,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
-                                        color: Color(0xFFFE0808)),
+                                      color: textColor,),
                                   ),
                                   Text(
                                     '  (${intresting['age']})',
@@ -344,111 +363,31 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
-                                        color: Color(0xFFFE0808)),
+                                      color: textColor,),
                                   )
                                 ],
                               ),
 
                               Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Father kula: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'MoonSign: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
-                                    child: Text(
-                                      '${intresting['kula_tname']??'-'}',
-                                      // intresting['kula_tname'].toString()??""
-                                      //     "/"
-                                      //     intresting['kula_ename'].toString()??"",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 6,
-                                    child: Text( " ${intresting['kula_ename']}",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Mother kula: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    child: Text('${intresting['motherkula_tname']??"-"}',
-
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 6,
-                                    child: Text(" ${intresting['motherkula_ename']}",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'MoonSign: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width - 200,
+                                  SizedBox(
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width -
+                                        200,
                                     child: Text(
                                       intresting['moonsign']??'-',
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Colors.red,
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -459,23 +398,24 @@ class _intrestedScreenState extends State<intrestedScreen> {
 
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Star: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'Star: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width - 200,
+                                  SizedBox(
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width -
+                                        200,
                                     child: Text(
                                       intresting['star']??'-',
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Colors.red,
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -491,23 +431,21 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Container(
-                                        child: Text(
-                                          'Patham: ',
-                                          style: GoogleFonts.nunitoSans(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.italic,
-                                          ),
+                                      Text(
+                                        'Patham: ',
+                                        style: GoogleFonts.nunitoSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
-                                      Container(
+                                      SizedBox(
                                         width: MediaQuery.of(context).size.width - 200,
                                         child: Text(
                                           intresting['patham']??'-',
                                           style: GoogleFonts.nunitoSans(
                                             fontSize: 14,
-                                            color: Colors.red,
+                                            color: textColor,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.italic,
                                           ),
@@ -515,30 +453,31 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 2,),
+
+                                  SizedBox(
+                                    height: 2,
+                                  ),
                                 ],
                               ),
 
 
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Lagnam: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'Lagnam: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: MediaQuery.of(context).size.width - 200,
                                     child: Text(
                                       intresting['lagnam']??'-',
                                       style: GoogleFonts.nunitoSans(
                                         fontSize: 14,
-                                        color: Colors.red,
+                                        color: textColor,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -547,21 +486,23 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                 ],
                               ),
 
-                              SizedBox(height: 2,),
+                              SizedBox(
+                                height: 2,
+                              ),
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Dosam: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'Dosam: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  SizedBox(width: 5,),
-                                  Container(
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  SizedBox(
                                     width: 40,
                                     child: Text(
                                       intresting['dosam'] ?? "-",
@@ -573,7 +514,7 @@ class _intrestedScreenState extends State<intrestedScreen> {
                                       ),
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width: 100,
                                     child: Text(
                                       intresting['ddosam'] ?? "",
@@ -590,14 +531,12 @@ class _intrestedScreenState extends State<intrestedScreen> {
 
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'City: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'City: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   Text(
@@ -613,14 +552,12 @@ class _intrestedScreenState extends State<intrestedScreen> {
                               //todo district
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'District: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'District: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   Text(
@@ -636,14 +573,12 @@ class _intrestedScreenState extends State<intrestedScreen> {
 
                               Row(
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'State: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'State: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   Text(
@@ -663,46 +598,66 @@ class _intrestedScreenState extends State<intrestedScreen> {
                     ),
                     Divider(),
                     Padding(
-                      padding: const EdgeInsets.only(left: 0, bottom: 5),
+                      padding: const EdgeInsets.only(left: 20),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
                         children: [
-                          // ElevatedButton(
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: MyColors.submitBtnColor,
-                          //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                          //     minimumSize: Size(120, 35),
-                          //   ),
-                          //   onPressed: () async {
-                          //     final shouldHide = await showCommonDialog(
-                          //       context: context,
-                          //       title: "Hide this Profile?",
-                          //       message: "Are you sure you want to Hide this Profile?",
-                          //       confirmText: "Hide",
-                          //       confirmColor: Colors.red,
-                          //     );
-                          //
-                          //     log("shouldHide $shouldHide");
-                          //
-                          //     if (shouldHide == true) {
-                          //       await hideProfile(
-                          //         loginMemberId: member_id,
-                          //         profileId: intresting['id'] ?? "",
-                          //       );
-                          //     }
-                          //   },
-                          //   child: Text("Hide", style: TextStyle(color: Colors.white),),
-                          // ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.submitBtnColor,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                              minimumSize: Size(150, 35),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: MyColors.submitBtnColor,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
+                                minimumSize: Size(120, 35),
+                              ),
+                              onPressed: () async {
+                                final shouldHide = await showCommonDialog(
+                                  context: context,
+                                  title: "Un-Hide this Profile?",
+                                  message: "Are you sure you want to Un-Hide this Profile?",
+                                  confirmText: "Un-Hide",
+                                  confirmColor: Colors.red,
+                                );
+
+                                log("shouldHide $shouldHide");
+
+                                if (shouldHide == true) {
+                                  await hideProfile(
+                                    loginMemberId: memberId,
+                                    profileId: intresting['id'],
+                                  );
+                                }
+                              },
+                              child: Text(
+                                "Un-Hide",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => viewProfile(memberId: intresting['id'],),),);
-                            },
-                            child: Text("View Profile", style: TextStyle(color: Colors.white),),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: MyColors.submitBtnColor,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
+                                minimumSize: Size(150, 35),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => viewProfile(
+                                      memberId: intresting['id'],
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "View Profile",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
                           ),
                         ],
                       ),

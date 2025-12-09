@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-import '../ApiUtils.dart';
+import '../other_files/api_utils.dart';
 import '../Models/CountryModel.dart';
 import '../Models/GotraModel.dart';
 import '../Models/KulaModel.dart';
@@ -19,6 +19,8 @@ import '../myprofile/height.dart';
 import '../myprofile/moonsigns.dart';
 import '../myprofile/stars.dart';
 import 'package:http/http.dart'as http;
+
+import '../other_files/global.dart';
 
 class personaldetails extends StatefulWidget {
   final String memberId;
@@ -234,7 +236,7 @@ class _personaldetailsState extends State<personaldetails> {
   Future<void> getPrefferdkula() async {
     try {
       final url = Uri.parse(
-          'http://kaverykannadadevangakulamatrimony.com/appadmin/api/kula');
+          '${GlobalVariables.baseUrl}appadmin/api/kula');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -290,7 +292,7 @@ String prefferedKulaIdsToJson() {
     log('mobile : ${phonenumber.text}');
 
     final url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/update_mobile?id='+member_id+'&mobile='+phonenumber.text;
+        '${GlobalVariables.baseUrl}appadmin/api/update_mobile?id='+member_id+'&mobile='+phonenumber.text;
     final uri = Uri.parse(url);
     final response1 = await http.post(uri);
     final body = response1.body;
@@ -303,7 +305,7 @@ String prefferedKulaIdsToJson() {
 
     if(status==true)
       {
-        const apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/personal_detail_update";
+        const apiUrl = "${GlobalVariables.baseUrl}appadmin/api/personal_detail_update";
         String selectedPrefferendKulaids = prefferedKulaIdsToJson();
 
         final userData = {
@@ -392,7 +394,7 @@ String prefferedKulaIdsToJson() {
     String member_id = prefs.getString("id")!;
 
 
-    final url = Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id='+member_id);
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id='+member_id);
 
     try {
       final response = await http.get(url);
@@ -481,7 +483,6 @@ for (String id in ids) {
   @override
   Widget build(BuildContext context) {
     double height=MediaQuery.of(context).size.height;
-    double width=MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -689,7 +690,7 @@ for (String id in ids) {
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<GotraModel>(
                   hint: const Text("Select Gotra"),
-                  value: selectedGotra,
+                  initialValue: selectedGotra,
                   onChanged: (GotraModel? value) {
                     setState(() {
                       motherkotra.text =
@@ -735,7 +736,7 @@ for (String id in ids) {
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonFormField<KulaModel>(
                   hint: const Text("Select Kula"),
-                  value: selectedKula,
+                  initialValue: selectedKula,
                   onChanged: (KulaModel? value) {
                     setState(() {
                       selectedKula = value;
@@ -945,7 +946,7 @@ for (String id in ids) {
                   padding: const EdgeInsets.all(8.0),
                   child: DropdownButtonFormField<CitizenModel>(
                     hint: const Text("Select citizenship"),
-                    value: selectedCitizenship,
+                    initialValue: selectedCitizenship,
                     onChanged: (CitizenModel? value) {
                       setState(() {
                         selectedCitizenship = value;

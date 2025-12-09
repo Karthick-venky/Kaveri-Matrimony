@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../Screens/loginScreen.dart';
 import '../Screens/registration.dart';
+import '../other_files/global.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -22,7 +23,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   Future<void> forgotpassword()
   async {
 
-    const apiUrl = "https://kaverykannadadevangakulamatrimony.com/appadmin/api/forgetpassword";
+    const apiUrl = "${GlobalVariables.baseUrl}appadmin/api/forgetpassword";
 
     final userData = {
       'email': emailController.text.toString(),

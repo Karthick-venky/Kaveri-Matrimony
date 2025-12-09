@@ -8,6 +8,7 @@ import '../../myprofile/moonsigns.dart';
 import '../../myprofile/stars.dart';
 import 'package:http/http.dart'as http;
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 
 class Astrological_Details extends StatefulWidget {
@@ -44,7 +45,7 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
   TextEditingController horoscopeController = TextEditingController();
   TextEditingController dosamdetails=TextEditingController();
 
-   TextEditingController dosamController = TextEditingController();
+  TextEditingController dosamController = TextEditingController();
   TextEditingController additionalFieldController = TextEditingController();
   final TextEditingController placeOfBirthController = TextEditingController();
   final TextEditingController timeOfBirthController = TextEditingController();
@@ -73,16 +74,11 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
 
   void updateProfile() async {
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     String member_id = prefs.getString("id")!;
-    // final apiUrl = 'http://kaverykannadadevangakulamatrimony.com/appadmin/api/astrology_detail_update?id=738&star=Vishakam&moonsign=Maharam&lagnam=Maharam&patham=1';
-    
-    //"http://kaverykannadadevangakulamatrimony.com/appadmin/api/astrology_detail_update";
+    final apiUrl ='${GlobalVariables.baseUrl}appadmin/api/astrology_detail_update?id=${member_id}&star=${selectedNakshatra.value}&moonsign=${selectedMoonsign.value}&lagnam=${selectedMoonsign.value}&patham=${selectedPatham?.patham??""}&birth=${placeOfBirthController.text}&timefor=${timeOfBirthController.text}&horoscope=${horoscopeController.text}&dosam=${dosamController.text}';
 
-    // final apiUrl ='http://kaverykannadadevangakulamatrimony.com/appadmin/api/astrology_detail_update?id=${member_id}&star=${starController.text}&moonsign=${MoonsignController.text}&lagnam=${lagnamController.text}&patham=${selectedPatham!.patham.toString()}';
-    final apiUrl ='http://kaverykannadadevangakulamatrimony.com/appadmin/api/astrology_detail_update?id=${member_id}&star=${selectedNakshatra.value}&moonsign=${selectedMoonsign.value}&lagnam=${selectedMoonsign.value}&patham=${selectedPatham?.patham??""}&birth=${placeOfBirthController.text}&timefor=${timeOfBirthController.text}&horoscope=${horoscopeController.text}&dosam=${dosamController.text}';
-
-  log('apiUrl : ${apiUrl}');
+    log('apiUrl : ${apiUrl}');
 
     final userData = {
       'id': member_id,
@@ -156,7 +152,7 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
     "Do Not Know": ["--select an option--"],
     "Not Applicable": ["--select an option--"],
   };
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -164,21 +160,21 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
 
     _fetchProfileData();
   }
- 
+
 // patham
 
- List<Patham> patham =[];
-   Patham? selectedPatham ;
+  List<Patham> patham =[];
+  Patham? selectedPatham ;
 
-     Future<void> getPatham() async {
+  Future<void> getPatham() async {
     try {
       final url = Uri.parse(
-          'https://kaverykannadadevangakulamatrimony.com/appadmin/api/patham');
+          '${GlobalVariables.baseUrl}appadmin/api/patham');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-       
+
 
         final paatham = (data['msg'] as List<dynamic>).map((kula) {
           return Patham.fromJson(kula);
@@ -191,8 +187,8 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
         throw Exception('Failed to load data');
       }
     } catch (e) {
-     log('ERROR : ${e}');
-    
+      log('ERROR : ${e}');
+
     }
   }
 
@@ -206,35 +202,35 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
     String member_id = prefs.getString("id")!;
 
     //!
-     final url = Uri.parse(
-          'https://kaverykannadadevangakulamatrimony.com/appadmin/api/patham');
-      final response = await http.get(url);
+    final url = Uri.parse(
+        '${GlobalVariables.baseUrl}appadmin/api/patham');
+    final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-       
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
 
-        final paatham = (data['msg'] as List<dynamic>).map((kula) {
-          return Patham.fromJson(kula);
-        }).toList();
 
-        setState(() {
-          patham = paatham;
-        });
-      } else {
-        throw Exception('Failed to load data');
-      }
+      final paatham = (data['msg'] as List<dynamic>).map((kula) {
+        return Patham.fromJson(kula);
+      }).toList();
+
+      setState(() {
+        patham = paatham;
+      });
+    } else {
+      throw Exception('Failed to load data');
+    }
     //!
 
     log("member_id : ${member_id}");
-    final url2 = Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/myprofile?member_id='+member_id);
+    final url2 = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/myprofile?member_id='+member_id);
 
     try {
       final response = await http.get(url2);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
-       log("jsonResponse:${jsonResponse}");
+        log("jsonResponse:${jsonResponse}");
         setState(() {
           profileData = [jsonResponse['member_details']];
           print(profileData);
@@ -242,29 +238,29 @@ class _Astrological_DetailsState extends State<Astrological_Details> {
             placeOfBirthController.text = profileData[0]['birth']??"";
             timeOfBirthController.text = profileData[0]['timefor'];
 
-             horoscope = profileData[0]['horoscope'].isEmpty?"No":profileData[0]['horoscope'];
+            horoscope = profileData[0]['horoscope'].isEmpty?"No":profileData[0]['horoscope'];
             selectedDosam = profileData[0]['dosam']??"";
             dosamController.text  = profileData[0]['dosam']??"";
             selectedSubDosam = profileData[0]['ddosam']??"";
             selectedsubDosamController.text  = profileData[0]['ddosam']??"";
             dosamdetails.text = profileData[0]['dosamdetails']??"";
-             horoscopeController.text =profileData[0]['horoscope'].isEmpty?"No":profileData[0]['horoscope'];
-log('4');
+            horoscopeController.text =profileData[0]['horoscope'].isEmpty?"No":profileData[0]['horoscope'];
+            log('4');
 
             var  selectedPatham1 =profileData[0]['patham']??"";
             selectedPatham1 = selectedPatham1.trim();
 
-log('5');
-log('selectedPatham1 : ${selectedPatham1}');
-log('patham : ${patham}');
-log('patham : ${patham.length}');
+            log('5');
+            log('selectedPatham1 : ${selectedPatham1}');
+            log('patham : ${patham}');
+            log('patham : ${patham.length}');
 
-               selectedPatham = patham.firstWhere(
+            selectedPatham = patham.firstWhere(
                   (item) => item.patham == selectedPatham1,
-                );
-log('selectedPatham : ${selectedPatham?.patham}');
+            );
+            log('selectedPatham : ${selectedPatham?.patham}');
 
-log('3');
+            log('3');
 
 
             for(int i=0;i<nakshatras.length;i++)
@@ -275,7 +271,7 @@ log('3');
                 selectedNakshatra =  nakshatras[i];
               }
             }
-log('1');
+            log('1');
 
             for(int i=0;i<moonSigns.length;i++)
             {
@@ -294,7 +290,7 @@ log('1');
               }
             }
 
-log('2');
+            log('2');
 
           });
         });
@@ -360,7 +356,7 @@ log('2');
                   ),
                 ),
               ),
-           
+
               SizedBox(
                 height: 20,
               ),
@@ -403,7 +399,7 @@ log('2');
               Padding(
                 padding: EdgeInsets.all(8),
                 child: DropdownButtonFormField<Nakshatra>(
-                  value: selectedNakshatra,  // Ensure selectedNakshatra is a valid Nakshatra instance from the list
+                  initialValue: selectedNakshatra,  // Ensure selectedNakshatra is a valid Nakshatra instance from the list
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                     fillColor: Colors.white,
@@ -447,7 +443,7 @@ log('2');
               Padding(
                 padding: EdgeInsets.all(8),
                 child: DropdownButtonFormField<MoonSign>(
-                  value: selectedMoonsign, // Ensure selectedMoonsign is a valid MoonSign instance from the list
+                  initialValue: selectedMoonsign, // Ensure selectedMoonsign is a valid MoonSign instance from the list
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                     fillColor: Colors.white,
@@ -494,7 +490,7 @@ log('2');
               Padding(
                 padding: EdgeInsets.all(8),
                 child: DropdownButtonFormField<MoonSign>(
-                  value: selectedLagnam,
+                  initialValue: selectedLagnam,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                     fillColor: Colors.white,
@@ -545,7 +541,7 @@ log('2');
               Padding(
                 padding: EdgeInsets.all(8),
                 child: DropdownButtonFormField(
-                  value: horoscope,
+                  initialValue: horoscope,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(
                         vertical: 15, horizontal: 15),
@@ -594,7 +590,7 @@ log('2');
               ),
 
 
-             //!
+              //!
               SizedBox(
                 height: 20,
               ),
@@ -606,7 +602,7 @@ log('2');
                   children: [
                     // Dosam Dropdown
                     DropdownButtonFormField<String>(
-                      value: dosamOptions.contains(selectedDosam) ? selectedDosam : null, // Ensure the value exists
+                      initialValue: dosamOptions.contains(selectedDosam) ? selectedDosam : null, // Ensure the value exists
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                         fillColor: Colors.white,
@@ -648,7 +644,7 @@ log('2');
                     // Sub Dosam dropdown for "yes" option
                     if (selectedDosam == "Yes")
                       DropdownButtonFormField<String>(
-                        value: subDosamOptions[selectedDosam]!.contains(selectedSubDosam)
+                        initialValue: subDosamOptions[selectedDosam]!.contains(selectedSubDosam)
                             ? selectedSubDosam
                             : null, // Ensure the value exists
                         decoration: InputDecoration(
@@ -722,12 +718,12 @@ log('2');
 
 
               //!
-               //todo patham dropdown   
+              //todo patham dropdown
 
-                Padding(
+              Padding(
                 padding: EdgeInsets.all(8),
                 child: DropdownButtonFormField(
-                  value: selectedPatham,
+                  initialValue: selectedPatham,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(
                         vertical: 15, horizontal: 15),
@@ -762,18 +758,18 @@ log('2');
                   }).toList(),
                   hint: Text("Choose Patham"),
                   onChanged: ( newValue) {
-                   
-                      setState(() {
-                        selectedPatham= newValue as Patham?;
-                        
-                      });
-                    
+
+                    setState(() {
+                      selectedPatham= newValue as Patham?;
+
+                    });
+
                   },
                 ),
               ),
 
 
-               SizedBox(
+              SizedBox(
                 height: 20,
               ),
 
@@ -797,7 +793,7 @@ log('2');
                 child: const Padding(
                   padding: EdgeInsets.all(12.0),
                   child: Text("Update",style: TextStyle(
-                    color: Colors.black
+                      color: Colors.black
                   ),),
                 ),
               ),

@@ -1,8 +1,7 @@
+import 'dart:developer';
 
-
+import 'package:flutter/material.dart';
 import '../../Screens/physicaldetails.dart';
-
-import '../export.dart';
 
 class EducationDetails extends StatefulWidget {
   const EducationDetails({super.key});
@@ -126,7 +125,7 @@ class _EducationDetailsState extends State<EducationDetails> {
                 onChanged: (String? value) {
                   employedin.text;
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -212,7 +211,7 @@ class _EducationDetailsState extends State<EducationDetails> {
                 onChanged: (String? value) {
                   percontroller.text;
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),

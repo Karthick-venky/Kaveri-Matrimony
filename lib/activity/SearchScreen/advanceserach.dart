@@ -1,12 +1,10 @@
-// ignore_for_file: prefer_if_null_operators, dead_code, prefer_const_constructors
-
 import 'dart:convert';
-
+import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../export.dart';
+import '../../other_files/global.dart';
 import '../Home Screens/viewprofile.dart';
 import 'AdvanceSearchModel.dart';
 
@@ -61,7 +59,7 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
     super.initState();
     fetchmemberid();
     fetchSearchList();
-    print('VICKY == >>> ${widget.martial}');
+    log('VICKY == >>> ${widget.martial}');
 
   }
 
@@ -82,11 +80,10 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? gender = prefs.getString("gender");
-    print("vijay gender${gender!}");
-    final apiUrl =
-        'https://kaverykannadadevangakulamatrimony.com/appadmin/api/search?marital_status='+widget.martial+'&gender='+gender+'&gotra='+gotra+"&kula="+kula+
+    log("vijay gender${gender!}");
+    final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/search?marital_status='+widget.martial+'&gender='+gender+'&gotra='+gotra+"&kula="+kula+
             "&from_age="+widget.fromage+"&to_age="+widget.toage+"&moonsign="+widget.moonsign+"&star="+widget.star+"&ddosam="+widget.dosam+"&from_height="+widget.from_height+"&to_height="+widget.to_height+"&job="+(widget.job.isEmpty?"":widget.job)+"&country="+widget.country+"&state="+widget.state+"&district="+widget.district+"&member_id="+memId+"&id="+ownmember_id; //
-    print(apiUrl);
+    log(apiUrl);
     final response = await http.post(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
@@ -175,7 +172,7 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                   ? Image.asset(
                                   "assets/user_images.png")
                                   : Image.network(
-                                'https://kaverykannadadevangakulamatrimony.com/profile_image/$finalImage',
+                                '${GlobalVariables.baseUrl}profile_image/$finalImage',
                                 fit: BoxFit.cover,
                                 errorBuilder: (BuildContext
                                 context,
@@ -187,7 +184,7 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                         .center,
                                     children: [
                                       Image.network(
-                                        'https://kaverykannadadevangakulamatrimony.com/profile_image/$finalImage',
+                                        '${GlobalVariables.baseUrl}profile_image/$finalImage',
                                         width: 80,
                                         height: 150,
                                       ),
@@ -252,18 +249,16 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    child: Text(
-                                      userList[index].maritalStatus ==
-                                          "Unmarried"
-                                          ? ""
-                                          : "மறுமணம்",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    userList[index].maritalStatus ==
+                                        "Unmarried"
+                                        ? ""
+                                        : "மறுமணம்",
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
@@ -529,14 +524,12 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                               ),
                               Row( crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Star: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'Star: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   SizedBox(
@@ -564,14 +557,12 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                   ),
                                   Row( crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        child: Text(
-                                          'Patham: ',
-                                          style: GoogleFonts.nunitoSans(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.italic,
-                                          ),
+                                      Text(
+                                        'Patham: ',
+                                        style: GoogleFonts.nunitoSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
                                       SizedBox(
@@ -599,14 +590,12 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                               ),
                               Row( crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    child: Text(
-                                      'Lagnam: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  Text(
+                                    'Lagnam: ',
+                                    style: GoogleFonts.nunitoSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                   SizedBox(
@@ -675,15 +664,13 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
-                                    child: Text(
-                                      " ${userList[index].city}",
-                                      style: GoogleFonts.nunitoSans(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle: FontStyle.italic,
-                                          color: Color(0xFF368EFB)),
-                                    ),
+                                  Text(
+                                    " ${userList[index].city}",
+                                    style: GoogleFonts.nunitoSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: FontStyle.italic,
+                                        color: Color(0xFF368EFB)),
                                   )
                                 ],
                               ),
@@ -728,15 +715,13 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                  Container(
-                                    child: Text(
-                                      "${userList[index].state}",
-                                      style: GoogleFonts.nunitoSans(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle: FontStyle.italic,
-                                          color: Color(0xFF368EFB)),
-                                    ),
+                                  Text(
+                                    "${userList[index].state}",
+                                    style: GoogleFonts.nunitoSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: FontStyle.italic,
+                                        color: Color(0xFF368EFB)),
                                   ),
                                 ],
                               )
@@ -859,14 +844,14 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
     required String member_id,
     required String profile_id,}) async {
     const apiUrl =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/add_wishlist';
+        '${GlobalVariables.baseUrl}appadmin/api/add_wishlist';
 
     final Map<String, dynamic> body = {
       'member_id': member_id,
       'profile_id': profile_id
     };
 
-    // print(member_id + "-" + profile_id);
+    // log(member_id + "-" + profile_id);
 
     try {
       final response = await http.post(
@@ -876,12 +861,12 @@ class _AdvanceSearchState extends State<AdvanceSearch> {
       );
 
       if (response.statusCode == 200) {
-        print(response.body); // Successful response, handle accordingly
+        log(response.body); // Successful response, handle accordingly
       } else {
-        print('Error: ${response.statusCode}'); // Handle error response
+        log('Error: ${response.statusCode}'); // Handle error response
       }
     } catch (e) {
-      print('Exception: $e'); // Handle exceptions
+      log('Exception: $e'); // Handle exceptions
     }
   }
 }

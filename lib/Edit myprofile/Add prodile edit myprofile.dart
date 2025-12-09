@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 class PickImage extends StatefulWidget {
   final String memberId;
@@ -55,7 +56,6 @@ class _PickImageState extends State<PickImage> {
                 scrollDirection: Axis.horizontal,
                 itemCount: imageFileList!.length,
                 itemBuilder: (context, index) {
-                  final employee = imageFileList![index];
                   return Column(
                     children: [
                       GestureDetector(
@@ -106,7 +106,7 @@ class _PickImageState extends State<PickImage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
 
-    var request = http.MultipartRequest('POST', Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/profile_image_update'));
+    var request = http.MultipartRequest('POST', Uri.parse('${GlobalVariables.baseUrl}appadmin/api/profile_image_update'));
     request.fields.addAll({
       'id': memberId
     });

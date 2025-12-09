@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart'as http;
 
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 class Password extends StatefulWidget {
   final String memberId;
@@ -74,7 +75,7 @@ class _PasswordState extends State<Password> {
     }
 
     // Make API request
-    String apiUrl = "http://kaverykannadadevangakulamatrimony.com/appadmin/api/changepassword";
+    String apiUrl = "${GlobalVariables.baseUrl}appadmin/api/changepassword";
     Map<String, String> body = {
       "member_id": widget.memberId,  // Replace with the actual member_id
       "old_password": oldPasswordController.text,
@@ -125,7 +126,6 @@ class _PasswordState extends State<Password> {
   @override
   Widget build(BuildContext context) {
     double height=MediaQuery.of(context).size.height;
-    double width=MediaQuery.of(context).size.width;
     return Scaffold(
         appBar: AppBar(
       backgroundColor: Colors.red,

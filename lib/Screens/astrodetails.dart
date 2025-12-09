@@ -1,20 +1,15 @@
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields, prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/material.dart';
 import '../../Models/CountryModel.dart';
 import '../../activity/SearchScreen/searchpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../export.dart';
 import '../myprofile/height.dart';
 import '../myprofile/moonsigns.dart';
 import '../myprofile/stars.dart';
 import '../myprofile/weight.dart';
-
 import 'package:http/http.dart' as http;
-
+import '../other_files/global.dart';
 import 'familydetails.dart';
 import 'personaldetailregistration.dart';
 
@@ -26,12 +21,10 @@ class AstroDetails extends StatefulWidget {
 }
 
 class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObserver {
-
-
-
-  TextEditingController _placeofbirthController = TextEditingController();
-  TextEditingController _placeofDistrictController = TextEditingController();
-  TextEditingController _timeofbirthController = TextEditingController();
+  
+  final TextEditingController _placeofbirthController = TextEditingController();
+  final TextEditingController _placeofDistrictController = TextEditingController();
+  final TextEditingController _timeofbirthController = TextEditingController();
   TextEditingController starController = TextEditingController();
   TextEditingController MoonsignController = TextEditingController();
   // TextEditingController PathamController = TextEditingController();
@@ -39,8 +32,8 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
   TextEditingController selectedDosamController = TextEditingController();
   TextEditingController selectedsubDosamController = TextEditingController();
   TextEditingController dosamController = TextEditingController();
-  TextEditingController _educationController = TextEditingController();
-  TextEditingController _dosamdetailsController = TextEditingController();
+  final TextEditingController _educationController = TextEditingController();
+  final TextEditingController _dosamdetailsController = TextEditingController();
   TextEditingController employedin = TextEditingController();
   TextEditingController incomecontroller = TextEditingController();
   TextEditingController percontroller = TextEditingController();
@@ -204,7 +197,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
   };
 
   Future<void> thirdregistration() async {
-    print(selectedComplexion);//todo send data to backend
+    log("selectedComplexion = $selectedComplexion");//todo send data to backend
     if (_placeofbirthController.text == "") {
       showCustomBar("Please Enter Place of Birth", Colors.red);
     } else if (_timeofbirthController.text == "") {
@@ -243,8 +236,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
     }
 
     else {
-      const apiUrl =
-          "http://kaverykannadadevangakulamatrimony.com/appadmin/api/member_temp_register3";
+      final apiUrl = "${GlobalVariables.baseUrl}appadmin/api/member_temp_register3";
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? mobile = prefs.getString("mobile");
@@ -276,7 +268,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
         'dosamdetails': _dosamdetailsController.text.toString(),
       };
 
-      print(userData);
+      log("userData = $userData");
       try {
         final response = await http.post(
           Uri.parse(apiUrl),
@@ -303,15 +295,15 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             ));
           }
 
-          print(status);
+          log("status $status");
         } else {
           // Handle errors
-          print("Error updating profile. Status code: ${response.statusCode}");
-          print("Response body: ${response.body}");
+          log("Error updating profile. Status code: ${response.statusCode}");
+          log("Response body: ${response.body}");
         }
       } catch (e) {
         // Handle other exceptions
-        print("Error updating profile: $e");
+        log("Error updating profile: $e");
       }
     }
   }
@@ -381,8 +373,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
     String? Occupationdetails1 = prefs.getString("Occupationdetails");
     String? horoscope12 = prefs.getString("horoscope");
 
-    final url = Uri.parse(
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/get_register3?mobile=${mobile!}');
+    final url = Uri.parse('${GlobalVariables.baseUrl}appadmin/api/get_register3?mobile=${mobile!}');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -423,7 +414,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             orElse: () => Patham(id: '', patham: null), // Optional patham here
           );
 
-          print("selectedPatham  =====>>>> $selectedPatham");
+          log("selectedPatham  =====>>>> $selectedPatham");
 
           physicallyChallengedController.text = data[0]['phy_details'];
 
@@ -493,8 +484,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
  late  List<JobsModel> jobsList=[];
 
  Future<void> fetchJobsList() async {
-    const url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/jobs';
+    final url = '${GlobalVariables.baseUrl}appadmin/api/jobs';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
@@ -515,7 +505,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
   List<Job> jobList = [];
   
     Future<void> fetchJobs() async {
-    final response = await http.get(Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/jobs'));
+    final response = await http.get(Uri.parse('${GlobalVariables.baseUrl}appadmin/api/jobs'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body)['msg'];
@@ -578,7 +568,6 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
     }
   }
 
-  @override
   void didPopNext() {
     // This is called when coming back to this page after popping another page
     fetchthirdregister();
@@ -718,7 +707,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<Patham>(
-                value: selectedPatham?.patham != null ? selectedPatham : null,
+                initialValue: selectedPatham?.patham != null ? selectedPatham : null,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -755,7 +744,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: EdgeInsets.all(8),
               child: DropdownButtonFormField(
-                value: selectedNakshatra,
+                initialValue: selectedNakshatra,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -775,7 +764,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                       starController.text = newValue.value.toString();
                     });
                   }
-                  print("Selected nakshatra code: ${newValue?.code}");
+                  log("Selected nakshatra code: ${newValue?.code}");
                 },
               ),
             ),
@@ -793,7 +782,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: EdgeInsets.all(8),
               child: DropdownButtonFormField(
-                value: selectedMoonsign,
+                initialValue: selectedMoonsign,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -832,7 +821,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: EdgeInsets.all(8),
               child: DropdownButtonFormField(
-                value: selectedLagnam,
+                initialValue: selectedLagnam,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -870,7 +859,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: EdgeInsets.all(8),
               child: DropdownButtonFormField(
-                value: horscopmatch,
+                initialValue: horscopmatch,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -916,7 +905,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
               child: Column(
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedDosam,
+                    initialValue: selectedDosam,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(5),
@@ -944,7 +933,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                   // Sub Dosam dropdown for "yes" option
                   if (selectedDosam == "Yes")
                     DropdownButtonFormField<String>(
-                      value: selectedSubDosam ??
+                      initialValue: selectedSubDosam ??
                           subDosamOptions[selectedDosam]!.first,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -1049,7 +1038,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: employed_val,
+                initialValue: employed_val,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1070,7 +1059,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                     
                   });
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -1140,7 +1129,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: per_val,
+                initialValue: per_val,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1158,7 +1147,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                   per_val = value;
                   percontroller.text = value.toString();
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -1193,7 +1182,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<Height>(
-                value: heights.firstWhere(
+                initialValue: heights.firstWhere(
                   (height) => height.displayText == selectedHeight,
                   orElse: () => heights[0],
                 ),
@@ -1216,7 +1205,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                       heightController.text = newValue.displayText;
                     });
                   }
-                  print("Selected height value: ${newValue?.value}");
+                  log("Selected height value: ${newValue?.value}");
                 },
               ),
             ),
@@ -1234,7 +1223,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<Weight>(
-                value: selectedWeight ?? weights[0],
+                initialValue: selectedWeight ?? weights[0],
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1271,7 +1260,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedBodyType,
+                initialValue: selectedBodyType,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1293,7 +1282,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                     });
                   }
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -1311,7 +1300,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedComplexion,
+                initialValue: selectedComplexion,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1333,7 +1322,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
                     });
                   }
                   // Handle the selected value
-                  print("Selected value: $value");
+                  log("Selected value: $value");
                 },
               ),
             ),
@@ -1351,7 +1340,7 @@ class _EduAstroDetailsState extends State<AstroDetails>  with WidgetsBindingObse
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButtonFormField<String>(
-                value: selectedPhysicalStatus,
+                initialValue: selectedPhysicalStatus,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),

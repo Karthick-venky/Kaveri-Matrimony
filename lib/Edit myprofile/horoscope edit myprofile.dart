@@ -7,6 +7,7 @@ import 'package:http/http.dart'as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../activity/Home Screens/myprofile.dart';
+import '../other_files/global.dart';
 
 class Horoscope extends StatefulWidget {
   final String memberId;
@@ -142,7 +143,7 @@ class _HoroscopeState extends State<Horoscope> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String memberId = prefs.getString("id")!;
 
-    var request = http.MultipartRequest('POST', Uri.parse('https://kaverykannadadevangakulamatrimony.com/appadmin/api/horoscope_image'));
+    var request = http.MultipartRequest('POST', Uri.parse('${GlobalVariables.baseUrl}appadmin/api/horoscope_image'));
     request.fields.addAll({
       'id': memberId
     });

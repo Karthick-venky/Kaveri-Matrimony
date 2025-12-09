@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../Models/CountryModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../ApiUtils.dart';
+import '../../other_files/api_utils.dart';
 import '../../Models/GotraModel.dart';
 import '../../Models/KulaModel.dart';
 import '../../Models/matched profile model.dart';
@@ -14,10 +14,10 @@ import '../../Models/search member id model.dart';
 import '../../myprofile/searchheights.dart';
 import '../../myprofile/searchmoonSigns.dart';
 import '../../myprofile/searcknakshtra.dart';
+import '../../other_files/global.dart';
 import '../BottomBar/bottombar.dart';
 import '../Home Screens/viewprofile.dart';
 import 'advanceserach.dart';
-import 'memberid page.dart';
 
 class searchScreen extends StatefulWidget {
   @override
@@ -44,12 +44,6 @@ class _searchScreenState extends State<searchScreen> {
   int a = 0;
   int b = 1;
 
-  int _fromAge = 18;
-  int _toHeight = 180;
-  int _toAge = 30;
-  int _fromHeight = 150;
-  bool _showAgeFilters = true;
-  bool _showHeightFilters = false;
   List<GotraModel> gotras = [];
   List<KulaModel> kulas = [];
 
@@ -71,24 +65,6 @@ class _searchScreenState extends State<searchScreen> {
     "RaguKeethu/Seva",
   ];
 
-  void _openEndDrawer(String section) {
-    Scaffold.of(context).openEndDrawer();
-
-    switch (section) {
-      case 'age':
-        setState(() {
-          _showAgeFilters = true;
-          _showHeightFilters = false;
-        });
-        break;
-      case 'height':
-        setState(() {
-          _showAgeFilters = false;
-          _showHeightFilters = true;
-        });
-        break;
-    }
-  }
 
   GotraModel? selectedGotra;
   KulaModel? selectedKula;
@@ -152,8 +128,7 @@ class _searchScreenState extends State<searchScreen> {
 
   Future<List<DistrictModel>> fetchDistrictList(String id) async {
     try {
-      final url =
-        'http://kaverykannadadevangakulamatrimony.com/appadmin/api/district?state_id=$id';
+      final url = '${GlobalVariables.baseUrl}appadmin/api/district?state_id=$id';
     final uri = Uri.parse(url);
     final response = await http.post(uri);
     final body = response.body;
@@ -204,8 +179,7 @@ districtList=stateList;
     String gender = prefs.getString("gender")!;
     print(gender);
     final response = await http.get(
-      Uri.parse(
-          'http://kaverykannadadevangakulamatrimony.com/appadmin/api/search_by_id?member_id=${memberId}&gender=${ gender == "Male" ? "male":"female"}'),
+      Uri.parse('${GlobalVariables.baseUrl}appadmin/api/search_by_id?member_id=${memberId}&gender=${ gender == "Male" ? "male":"female"}'),
     );
 
     if (response.statusCode == 200) {
@@ -233,7 +207,7 @@ districtList=stateList;
   }
 
    Future<void> fetchJobs() async {
-    final response = await http.get(Uri.parse('http://kaverykannadadevangakulamatrimony.com/appadmin/api/jobs'));
+    final response = await http.get(Uri.parse('${GlobalVariables.baseUrl}appadmin/api/jobs'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body)['msg'];
@@ -406,7 +380,8 @@ districtList=stateList;
             ),
             a == 1
                 ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
                         height: 10,
@@ -504,7 +479,7 @@ districtList=stateList;
                         padding: EdgeInsets.only(right: 15, left: 15),
                         child: DropdownButtonFormField<GotraModel>(
                           hint: const Text("Select Gotra"),
-                          value: selectedGotra,
+                          initialValue: selectedGotra,
                           onChanged: (GotraModel? value) {
                             setState(() {
                               gotraController.text = value?.id ?? "";
@@ -551,7 +526,7 @@ districtList=stateList;
                         padding: EdgeInsets.only(right: 15, left: 15),
                         child: DropdownButtonFormField<KulaModel>(
                           hint: const Text("Select Kula"),
-                          value: selectedKula,
+                          initialValue: selectedKula,
                           onChanged: (KulaModel? value) {
                             setState(() {
                               selectedKula = value;
@@ -776,7 +751,7 @@ districtList=stateList;
                               borderRadius: BorderRadius.circular(5),
                             ),
                           ),
-                    value: selectedCountry,
+                    initialValue: selectedCountry,
                     onChanged: (CountryModel? value) {
                       setState(() {
                         selectedCountry = value;
@@ -834,7 +809,7 @@ districtList=stateList;
                               borderRadius: BorderRadius.circular(5),
                             ),
                           ),
-                    value: selectedState,
+                    initialValue: selectedState,
                     onChanged: (StateModel? value) {
                        fetchDistrict(value!.id.toString());
                       setState(() {
@@ -894,7 +869,7 @@ districtList=stateList;
                               borderRadius: BorderRadius.circular(5),
                             ),
                           ),
-                    value: selectedDistrict,
+                    initialValue: selectedDistrict,
                     onChanged: (DistrictModel? value) {
                       setState(() {
                         selectedDistrict = value;
@@ -1120,8 +1095,7 @@ districtList=stateList;
                         height: 20,
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(
-                            top: 10.0, bottom: 10, left: 100),
+                        padding: const EdgeInsets.only(top: 10.0, bottom: 10, left: 10),
                         child: ElevatedButton(
                           onPressed: () async {
                             if (martController.text == "") {
@@ -1183,7 +1157,6 @@ districtList=stateList;
                                   // state: stateValue.toString() , // Pass stateValue
                                   city: cityValue.toString(), // Pass cityValue
                                   job:selectedJob??""
-
                                       ),
 
                                 ),
@@ -1193,11 +1166,8 @@ districtList=stateList;
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.yellow,
-                            textStyle: TextStyle(
-                              fontSize: 18,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 12),
+                            textStyle: TextStyle(fontSize: 18,),
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                           ),
                           child: Text("Search Profile"),
                         ),
