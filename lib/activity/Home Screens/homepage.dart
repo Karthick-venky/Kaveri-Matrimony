@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   icon: FontAwesomeIcons.solidHeart,
                   text: "Interested Profile",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => intrestedScreen()),);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => InterestedScreen()),);
                   },
                 ),
 
@@ -261,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   icon: FontAwesomeIcons.bagShopping,
                   text: "Wishlist Profile",
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => wishlistScreen()),);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => WishlistScreen()),);
                   },
                 ),
 

@@ -24,8 +24,8 @@ class _BottomBarState extends State<BottomBar> {
     const HomeScreen(wishlistmemberid: '', interestedmemberid: '',),
     searchScreen(),
     const MyProfile(memberId: '', id: '',),
-    const intrestedScreen(),
-    const wishlistScreen(),
+    const InterestedScreen(),
+    const WishlistScreen(),
   ];
 
   @override

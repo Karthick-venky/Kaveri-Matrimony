@@ -1,8 +1,5 @@
-// ignore_for_file: prefer_const_constructors, prefer_if_null_operators, sized_box_for_whitespace, avoid_unnecessary_containers
-
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -14,14 +11,14 @@ import '../../other_files/profile_service.dart';
 import '../BottomBar/bottombar.dart';
 import '../Home Screens/viewprofile.dart';
 
-class intrestedScreen extends StatefulWidget {
-  const intrestedScreen({super.key});
+class InterestedScreen extends StatefulWidget {
+  const InterestedScreen({super.key});
 
   @override
-  State<intrestedScreen> createState() => _intrestedScreenState();
+  State<InterestedScreen> createState() => _InterestedScreenState();
 }
 
-class _intrestedScreenState extends State<intrestedScreen> {
+class _InterestedScreenState extends State<InterestedScreen> {
   List<dynamic> intrestList = [];
 
   String member_id = "";
@@ -29,30 +26,29 @@ class _intrestedScreenState extends State<intrestedScreen> {
   @override
   void initState() {
     super.initState();
-    fetchIntrestList();
+    fetchInterestList();
   }
 
-  Future<void> fetchIntrestList() async {
+  Future<void> fetchInterestList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     member_id = prefs.getString("id")!;
-    log('member_id: $member_id');
+    log('fetchInterestList member_id: $member_id');
 
     final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/interest_request?member_id=$member_id';
-    print(apiUrl);
+    log("fetchInterestList apiUrl = $apiUrl");
     final response = await http.get(Uri.parse(apiUrl));
-    log('jsonDataone :${response.body}');
+    log('fetchInterestList response.body :${response.body}');
 
     if (response.statusCode == 200) {
       final dynamic jsonData = json.decode(response.body);
-      log('jsonDataone :$jsonData');
+      log('fetchInterestList jsonData :$jsonData');
 
       setState(() {
         intrestList = jsonData['Result'];
-        log('intrestList : $intrestList');
+        log('fetchInterestList : $intrestList');
       });
     } else {
-      throw Exception(
-          'Failed to load employee data. Status code: ${response.statusCode}');
+      throw Exception('Failed to load employee data. Status code: ${response.statusCode}');
     }
   }
 
@@ -64,656 +60,164 @@ class _intrestedScreenState extends State<intrestedScreen> {
 
     if (result["status"] == true) {
       CommonSnackBar.show(context, message: result["msg"], backgroundColor: Colors.green,);
-      fetchIntrestList();
+      fetchInterestList();
     } else {
       CommonSnackBar.show(context, message: result["msg"] ?? "Failed", backgroundColor: Colors.red,);
     }
   }
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    return Container(
-      child: Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white,),
-          backgroundColor: const Color(0xFFB30000),
-          title: const Text("INTERESTED PROFILE", style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white),),
-          centerTitle: true,
-        ),
-        bottomNavigationBar: BottomBar(index: 3),
-        body: intrestList.isEmpty ?
-        Center(child: Text('No data Available'),) :
-        ListView.builder(
-          itemCount: intrestList.length,
-          itemBuilder: (_, index) {
-            final intresting = intrestList[index];
-            log("intresting : $intresting");
-            final profileImage = intresting['profile_image'];
-            final finalImage;
-            if (profileImage != "") {
-              int semicolonIndex = profileImage.indexOf(",");
-              if (semicolonIndex != -1) {
-                finalImage = profileImage.substring(0, semicolonIndex);
-              } else {
-                finalImage = profileImage;
-              }
-            } else {
-              finalImage = "";
-            }
-            return Padding(
-              padding: const EdgeInsets.only(top: 10, left: 10, right: 10, bottom: 10),
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: Offset(0.0, 2.0),
-                      blurRadius: 6.0,
-                    ),
-                  ],
-                ),
-                child: Column(
+    return Scaffold(
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white,),
+        backgroundColor: const Color(0xFFB30000),
+        title: const Text("INTERESTED PROFILE", style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white),),
+        centerTitle: true,
+      ),
+      bottomNavigationBar: BottomBar(index: 3),
+      body: intrestList.isEmpty ?
+      Center(child: Text('No data Available'),) :
+      ListView.builder(
+        itemCount: intrestList.length,
+        itemBuilder: (_, index) {
+          final intresting = intrestList[index];
+          final profileImage = (intresting['profile_image'] ?? '').toString().trim();
+          final finalImage = profileImage.contains(',') ? profileImage.split(',').first : profileImage;
+          return Padding(
+          padding: const EdgeInsets.all(10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [BoxShadow(color: Colors.grey, offset: Offset(0, 2), blurRadius: 6,),],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 66.1, left: 10),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 70,
-                                height: 100,
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10),),
-                                child: finalImage == "" ?
-                                Image.asset("assets/user_images.png") : Image.network('${GlobalVariables.baseUrl}profile_image/$finalImage', fit: BoxFit.cover,),
-                              )
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                          const EdgeInsets.only(left: 20, top: 10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 150,
-                                    child: Text(
-                                      intresting['name'] ?? "",
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.normal,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['member_id'] ?? "",
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 2,),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 150,
-                                    child: Text(
-                                      intresting['countryofliving'] ==
-                                          null
-                                          ? ""
-                                          : intresting[
-                                      'countryofliving'],
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 16,
-                                        color: Colors.orange,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['marital_status'] ==
-                                        "Unmarried"
-                                        ? ""
-                                        : "மறுமணம்",
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              //todo education
-                              Row(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Education: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 2.2,
-                                    child: Text(
-                                      intresting['education_details']??'-',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFFFE0808),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              //todo occupation
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Occupation: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 2,
-                                    child: Text(
-                                      intresting[
-                                      'occupation_details'] ??
-                                          "-",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFFFE0808),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              //todo income
-
-                              Row(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Income: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                      intresting['income'] ?? "-",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFFFE0808),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 6,
-                                    child: Text(
-                                      intresting['per'] ?? "",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFFFE0808),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Dob-Age: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['dob'] ?? "-",
-                                    style: GoogleFonts.openSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFFFE0808)),
-                                  ),
-                                  Text(
-                                    '  (${intresting['age']})',
-                                    style: GoogleFonts.openSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFF368EFB)),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Text(
-                                    'Height: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['height'] ?? "-",
-                                    style: GoogleFonts.openSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFFFE0808)),
-                                  )
-                                ],
-                              ),
-
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Father kula: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                      '${intresting['kula_tname']??'-'}',
-                                      // intresting['kula_tname'].toString()??""
-                                      //     "/"
-                                      //     intresting['kula_ename'].toString()??"",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 6,
-                                    child: Text( " ${intresting['kula_ename']}",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Mother kula: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    child: Text('${intresting['motherkula_tname']??"-"}',
-
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: width / 6,
-                                    child: Text(" ${intresting['motherkula_ename']}",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Color(0xFF368EFB),
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'MoonSign: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width - 200,
-                                    child: Text(
-                                      intresting['moonsign']??'-',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Star: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width - 200,
-                                    child: Text(
-                                      intresting['star']??'-',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 2,
-                              ),
-                              intresting['patham'] == "" ? SizedBox():
-                              Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        child: Text(
-                                          'Patham: ',
-                                          style: GoogleFonts.nunitoSans(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: MediaQuery.of(context).size.width - 200,
-                                        child: Text(
-                                          intresting['patham']??'-',
-                                          style: GoogleFonts.nunitoSans(
-                                            fontSize: 14,
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 2,),
-                                ],
-                              ),
-
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Lagnam: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: MediaQuery.of(context).size.width - 200,
-                                    child: Text(
-                                      intresting['lagnam']??'-',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              SizedBox(height: 2,),
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'Dosam: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 5,),
-                                  Container(
-                                    width: 40,
-                                    child: Text(
-                                      intresting['dosam'] ?? "-",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 100,
-                                    child: Text(
-                                      intresting['ddosam'] ?? "",
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'City: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['city'] ??"-",
-                                    style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFF368EFB)),
-                                  ),
-                                ],
-                              ),
-                              //todo district
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'District: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['district'] ?? "-",
-                                    style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFF368EFB)),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Container(
-                                    child: Text(
-                                      'State: ',
-                                      style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    intresting['state']??'-',
-                                    style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFF368EFB)),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
+                    /// IMAGE
                     Padding(
-                      padding: const EdgeInsets.only(left: 0, bottom: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // ElevatedButton(
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: MyColors.submitBtnColor,
-                          //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                          //     minimumSize: Size(120, 35),
-                          //   ),
-                          //   onPressed: () async {
-                          //     final shouldHide = await showCommonDialog(
-                          //       context: context,
-                          //       title: "Hide this Profile?",
-                          //       message: "Are you sure you want to Hide this Profile?",
-                          //       confirmText: "Hide",
-                          //       confirmColor: Colors.red,
-                          //     );
-                          //
-                          //     log("shouldHide $shouldHide");
-                          //
-                          //     if (shouldHide == true) {
-                          //       await hideProfile(
-                          //         loginMemberId: member_id,
-                          //         profileId: intresting['id'] ?? "",
-                          //       );
-                          //     }
-                          //   },
-                          //   child: Text("Hide", style: TextStyle(color: Colors.white),),
-                          // ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.submitBtnColor,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                              minimumSize: Size(150, 35),
+                      padding: const EdgeInsets.only(top: 20, left: 10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: 90, height: 150,
+                          child: finalImage.isEmpty ? Image.asset("assets/user_images.png") : Image.network("${GlobalVariables.baseUrl}profile_image/$finalImage", fit: BoxFit.cover,),
+                        ),
+                      ),
+                    ),
+
+                    /// TEXT CONTENT
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 15, top: 10, right: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Name + Member ID
+                            Row(
+                              children: [
+                                Expanded(child: Text(intresting['name'] ?? "", style: GoogleFonts.openSans(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.red,),),),
+                                Text(intresting['member_id'] ?? "", style: GoogleFonts.openSans(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue,),),
+                              ],
                             ),
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => viewProfile(memberId: intresting['id'],),),);
-                            },
-                            child: Text("View Profile", style: TextStyle(color: Colors.white),),
-                          ),
-                        ],
+
+                            SizedBox(height: 3),
+
+                            /// Country + Marital Status
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(intresting['countryofliving'] ?? "",
+                                    style: GoogleFonts.nunitoSans(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),
+                                  ),
+                                ),
+                                Text(intresting['marital_status'] == "Unmarried" ? "" : "மறுமணம்",
+                                  style: GoogleFonts.nunitoSans(fontSize: 14, color: Colors.green, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 5),
+
+                            /// Reusable Field Rows
+                            infoRow("Education", intresting['education_details'], color: Colors.red),
+                            infoRow("Occupation", intresting['occupation_details'], color: Colors.red),
+                            infoRow("Income", "${intresting['income'] ?? '-'} ${intresting['per'] ?? ''}", color: Colors.red),
+                            infoRow("Dob-Age", "${intresting['dob'] ?? '-'} (${intresting['age']})", color: Colors.blue),
+                            infoRow("Height", intresting['height'], color: Colors.red),
+                            infoRow("Father kula", "${intresting['kula_tname'] ?? '-'} ${intresting['kula_ename'] ?? ''}", color: Colors.blue),
+                            infoRow("Mother kula", "${intresting['motherkula_tname'] ?? '-'} ${intresting['motherkula_ename'] ?? ''}", color: Colors.blue),
+                            infoRow("MoonSign", intresting['moonsign'] ?? '-', color: Colors.red),
+                            infoRow("Star", intresting['star'] ?? '-', color: Colors.red),
+
+                            if (intresting['patham'] != "")
+                              infoRow("Patham", intresting['patham'] ?? '-', color: Colors.red),
+
+                            infoRow("Lagnam", intresting['lagnam'] ?? '-', color: Colors.red),
+                            infoRow("Dosam", "${intresting['dosam'] ?? '-'} ${intresting['ddosam'] ?? ''}", color: Colors.green),
+                            infoRow("City", intresting['city'] ?? '-', color: Colors.blue),
+                            infoRow("District", intresting['district'] ?? '-', color: Colors.blue),
+                            infoRow("State", intresting['state'] ?? '-', color: Colors.blue),
+
+                            // SizedBox(height: 5),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            );
-          },
-        ),
+
+                Divider(),
+
+                /// Buttons Section
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.submitBtnColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
+                      minimumSize: Size(150, 35),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => viewProfile(memberId: intresting['id']),),);
+                    },
+                    child: const Text("View Profile", style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          );
+        },
       ),
     );
   }
+
+  Widget infoRow(String label, String value, {Color color = Colors.black}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ', style: GoogleFonts.nunitoSans(fontSize: 14, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),),
+          Expanded(
+            child: Text(value.isEmpty ? "-" : value, softWrap: true,
+              style: GoogleFonts.nunitoSans(fontSize: 14, color: color, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget simpleInfo(String label, String value, {Color color = Colors.black}) {
+    return Row(
+      children: [
+        Text('$label: ', style: GoogleFonts.nunitoSans(fontSize: 14, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),),
+        Text(value.isEmpty ? "-" : value, style: GoogleFonts.nunitoSans(fontSize: 14, color: color, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),),
+      ],
+    );
+  }
+
 }

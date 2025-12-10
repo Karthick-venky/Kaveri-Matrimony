@@ -1,27 +1,25 @@
 import 'dart:convert';
-
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../activity/wishlistScreen/WishListModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../other_files/common_snackbar.dart';
 import '../../other_files/global.dart';
 import '../../other_files/loading.dart';
 import '../../other_files/profile_service.dart';
 import '../BottomBar/bottombar.dart';
 import 'package:http/http.dart' as http;
-
 import '../Home Screens/homepage.dart';
 
-class wishlistScreen extends StatefulWidget {
-  const wishlistScreen({super.key});
+class WishlistScreen extends StatefulWidget {
+  const WishlistScreen({super.key});
 
   @override
-  State<wishlistScreen> createState() => _wishlistScreenState();
+  State<WishlistScreen> createState() => _WishlistScreenState();
 }
 
-class _wishlistScreenState extends State<wishlistScreen> {
+class _WishlistScreenState extends State<WishlistScreen> {
   List<Emp> wishList = [];
 
   String member_id = "";
@@ -29,31 +27,27 @@ class _wishlistScreenState extends State<wishlistScreen> {
   @override
   void initState() {
     super.initState();
-    fetchwishList();
+    fetchWishList();
   }
 
-  Future<WishListModel> fetchwishList() async {
+  Future<WishListModel> fetchWishList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     member_id = prefs.getString("id")!;
 
-    print("wishmemebr$member_id");
+    log("fetchWishList member id = $member_id");
 
-    final apiUrl =
-        '${GlobalVariables.baseUrl}appadmin/api/wishlist?member_id=$member_id';
+    final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/wishlist?member_id=$member_id';
 
     final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       var mm=  WishListModel.fromJson(json.decode(response.body));
-
-      //  log('jsonData :${jsonData}');
       setState(() {
         wishList =mm.emp!;
       });
       return mm;
     } else {
-      throw Exception(
-          'Failed to load employee data. Status code: ${response.statusCode}');
+      throw Exception('Failed to load employee data. Status code: ${response.statusCode}');
     }
   }
 
@@ -65,7 +59,7 @@ class _wishlistScreenState extends State<wishlistScreen> {
 
     if (result["status"] == true) {
       CommonSnackBar.show(context, message: result["msg"], backgroundColor: Colors.green,);
-      fetchwishList();
+      fetchWishList();
     } else {
       CommonSnackBar.show(context, message: result["msg"] ?? "Failed", backgroundColor: Colors.red,);
     }
@@ -74,7 +68,6 @@ class _wishlistScreenState extends State<wishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double height=MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -83,610 +76,147 @@ class _wishlistScreenState extends State<wishlistScreen> {
         title: const Text("WISHLIST", style: TextStyle(fontWeight: FontWeight.normal, color: Colors.white),),
       ),
       bottomNavigationBar: const BottomBar(index: 4),
-      body: ListView.builder(
+      body: wishList.isEmpty ?
+      Center(child: Text('No data Available'),) :
+      ListView.builder(
         itemCount: wishList.length,
-        itemBuilder: (_, index) {
-          final profileImage = wishList[index].profileImage!;
-          final String finalImage;
-          if (profileImage != "") {
-            int semicolonIndex = profileImage.indexOf(",");
-            if (semicolonIndex != -1) {
-              finalImage = profileImage.substring(0, semicolonIndex);
-            } else {
-              finalImage = profileImage;
-            }
-          } else {
-            finalImage = "";
-          }
-          return Padding(
-            padding: const EdgeInsets.only(top: 10, left: 10, right: 10, bottom: 10),
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                boxShadow: [BoxShadow(color: Colors.grey, offset: Offset(0.0, 2.0), blurRadius: 6.0,),],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        flex: 5,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top:  66, left:  10,right: 10),
-                          child: Container(
-                            width: 100,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              borderRadius:
-                              BorderRadius.circular(10),
+          itemBuilder: (_, index) {
+            final item = wishList[index];
+            final finalImage = extractFirstImage(item.profileImage ?? "");
+            return Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: const [BoxShadow(color: Colors.grey, offset: Offset(0, 2), blurRadius: 6,)],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        /// IMAGE
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20, left: 10),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
+                              width: 90, height: 150,
+                              child: finalImage.isEmpty ? Image.asset("assets/user_images.png") : Image.network("${GlobalVariables.baseUrl}profile_image/$finalImage", fit: BoxFit.cover,),
                             ),
-                            child: finalImage == ""
-                                ? Image.asset(
-                                "assets/user_images.png")
-                                : Image.network(
-                              '${GlobalVariables.baseUrl}profile_image/$finalImage',
-                              fit: BoxFit.cover,
-                              errorBuilder: (BuildContext
-                              context,
-                                  Object exception,
-                                  StackTrace? stackTrace) {
-                                return Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .center,
+                          ),
+                        ),
+
+                        /// DETAILS
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 15, top: 10, right: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                /// NAME + ID
+                                Row(
                                   children: [
-                                    Image.network(
-                                      '${GlobalVariables.baseUrl}profile_image/$finalImage',
-                                      width: 80,
-                                      height: 150,
+                                    Expanded(child: Text(item.name ?? "", style: GoogleFonts.openSans(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.red,),),),
+                                    Text(item.memberId ?? "", style: GoogleFonts.openSans(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold,),),
+                                  ],
+                                ),
+                                SizedBox(height: 3),
+                                /// COUNTRY + MARITAL STATUS
+                                Row(
+                                  children: [
+                                    Expanded(child: Text(item.countryofliving ?? "", style: GoogleFonts.nunitoSans(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),),),
+                                    Text(item.maritalStatus == "Unmarried" ? "" : "மறுமணம்", style: GoogleFonts.nunitoSans(fontSize: 14, color: Colors.green, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),
                                     ),
                                   ],
-                                );
-                              },
+                                ),
+
+                                const SizedBox(height: 5),
+
+                                /// Reusable Field Rows
+                                info("Education", item.educationDetails ?? "", color: const Color(0xFFFE0808),),
+                                info("Occupation", item.occupationDetails ?? "", color: Color(0xFFFE0808)),
+                                info("Income", (item.income?.toString().isNotEmpty == true && item.income.toString() != "Nil") ? item.income.toString() : "Not Given", color: Color(0xFFFE0808)),
+                                info("Dob-Age", "${item.dob} (${item.age})", color: Color(0xFF368EFB)),
+                                info("Height", item.height ?? "", color: Color(0xFFFE0808)),
+                                info("Father Kula", "${item.kulaTname} / ${item.kulaEname}", color: Color(0xFF368EFB)),
+                                info("Mother Kula", "${item.motherkulaTname} / ${item.motherkulaEname}", color: Color(0xFF368EFB)),
+                                info("Moonsign", item.moonsign ?? "", color: Color(0xFFFE0808)),
+                                info("Star", item.star ?? "", color: Color(0xFFFE0808)),
+                                info("Lagnam", item.lagnam ?? "", color: Color(0xFFFE0808)),
+                                info("Dosam", "${item.dosam ?? ""} ${item.ddosam ?? ""}", color: Colors.green),
+                                info("City", item.city ?? "", color: Color(0xFF368EFB)),
+                                info("District", item.district ?? "", color: Color(0xFF368EFB)),
+                                info("State", item.state ?? "", color: Color(0xFF368EFB)),
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-
-                      Flexible(flex: 8,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 150,
-                                  child: Text(
-                                    wishList[index].name!,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                ),
-
-                                Flexible(
-                                  child: Text(
-                                    wishList[index].memberId!,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 12,
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.normal,
-                                    ),
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 150,
-                                  child: Text(
-                                    '${wishList[index].countryofliving}',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 16,
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  wishList[index].maritalStatus ==
-                                      "Unmarried"
-                                      ? ""
-                                      : "மறுமணம்",
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            Row(
-                              children: [
-                                Text(
-                                  'Education: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    wishList[index].educationDetails!,
-                                    overflow: TextOverflow.visible,
-
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFFFE0808),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-
-                            // todo: occupation
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              //  mainAxisAlignment: Main,
-                              children: [
-                                Text(
-                                  'Occupation: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-
-
-                                Flexible(
-                                  child: Text(
-                                    '${wishList[index].occupationDetails}',
-                                    overflow: TextOverflow.visible,
-                                    maxLines: null,
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFFFE0808),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            SizedBox(height: height / 156.6,),
-                            // todo: income
-
-                            Row(
-                              children: [
-                                Text(
-                                  'Income: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 120,
-                                  child:
-                                  Text(
-                                    wishList[index].income.toString().isNotEmpty && wishList[index].income.toString() !="Nil"
-                                        ? wishList[index].income.toString()
-                                        : 'Not Given',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFFFE0808),),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-
-                            // todo: dob - age
-                            Row(
-                              children: [
-                                Text(
-                                  'Dob-Age: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  '${wishList[index].dob}',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                    color: const Color(0xFFFE0808),),
-                                ),
-                                Text(
-                                  '(${wishList[index].age})',
-                                  style: GoogleFonts.openSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF368EFB)),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            // todo: height
-                            Row(
-                              children: [
-                                Text(
-                                  'Height: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  '${wishList[index].height}',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                    // color: Color(0xFFD1097B)
-                                    color: const Color(0xFFFE0808),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-                            const Row(
-                              children: [
-                                SizedBox(
-                                  width: 5,
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Father kula: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    ' ${wishList[index].kulaTname} / ${wishList[index].kulaEname}',
-                                    overflow: TextOverflow.visible,
-                                    maxLines: null,
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFF368EFB),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-
-                                  ),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            // todo mother kula
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Mother Kula: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    ' ${wishList[index].motherkulaTname} / ${wishList[index].motherkulaEname}',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFF368EFB),
-
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-
-                                    ),
-                                    overflow: TextOverflow.visible,
-
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(flex: 1,
-                                  child: Text(
-                                    'Moonsign: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                                Flexible(flex: 1,
-                                  child: Text(
-                                    '${wishList[index].moonsign}',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFFFE0808),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Star: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: MediaQuery.of(context)
-                                      .size
-                                      .width -
-                                      250,
-                                  child: Text(
-                                    '${wishList[index].star}',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFFFE0808),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Lagnam: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: MediaQuery.of(context)
-                                      .size
-                                      .width -
-                                      250,
-                                  child: Text(
-                                    '${wishList[index].lagnam}',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: const Color(0xFFFE0808),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Dosam: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  ' ${wishList[index].dosam}',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  '${wishList[index].ddosam}',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-
-                            //todo city, district, state
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'City: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  " ${wishList[index].city}",
-                                  style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF368EFB)),
-                                )
-                              ],
-                            ),
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(flex: 1,
-                                  child: Text(
-                                    'District: ',
-                                    style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ),
-                                Flexible(flex: 1,
-                                  child: Text(
-                                    " ${wishList[index].district}",
-                                    style: GoogleFonts.nunitoSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.italic,
-                                        color: const Color(0xFF368EFB)),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                             SizedBox(height: height / 156.6,),
-                            Row( crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'State: ',
-                                  style: GoogleFonts.nunitoSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                Text(
-                                  "${wishList[index].state}",
-                                  style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF368EFB)),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 0, bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // ElevatedButton(
-                        //   style: ElevatedButton.styleFrom(
-                        //     backgroundColor: MyColors.submitBtnColor,
-                        //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                        //     minimumSize: Size(120, 35),
-                        //   ),
-                        //   onPressed: () async {
-                        //     final shouldHide = await showCommonDialog(
-                        //       context: context,
-                        //       title: "Hide this Profile?",
-                        //       message: "Are you sure you want to Hide this Profile?",
-                        //       confirmText: "Hide",
-                        //       confirmColor: Colors.red,
-                        //     );
-                        //
-                        //     log("shouldHide $shouldHide");
-                        //
-                        //     if (shouldHide == true) {
-                        //       await hideProfile(
-                        //         loginMemberId: member_id,
-                        //         profileId: wishList[index].id ?? "",
-                        //       );
-                        //     }
-                        //   },
-                        //   child: Text("Hide", style: TextStyle(color: Colors.white),),
-                        // ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: MyColors.submitBtnColor,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
-                            minimumSize: const Size(150, 35),
-                          ),
-                          onPressed: () {
-                            RemoveWishlist(
-                              member_id: member_id,
-                              profile_id: wishList[index].id!,
-                            );
-                          },
-                          child: const Text("Remove From Wishlist", style: TextStyle(color: Colors.white),),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-          );
 
-        },
+                    const Divider(),
+
+                    /// BUTTON
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyColors.submitBtnColor,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15),),
+                          minimumSize: const Size(150, 35),
+                        ),
+                        onPressed: () {
+                          removeWishlist(member_id: member_id, profile_id: item.id!,);
+                        },
+                        child: const Text("Remove From Wishlist", style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
       ),
     );
   }
 
-  Future<void> RemoveWishlist({
-    required String member_id,
-    required String profile_id,
-  }) async {
+  Widget info(String label, String value, {Color color = Colors.black}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("$label: ",
+            style: GoogleFonts.nunitoSans(fontSize: 14, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),
+          ),
+          Expanded(
+            child: Text(value.isEmpty ? "-" : value,   softWrap: true,
+              style: GoogleFonts.nunitoSans(fontSize: 14, color: color, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic,),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String extractFirstImage(String img) {
+    if (img.isEmpty) return "";
+    int i = img.indexOf(",");
+    return i == -1 ? img : img.substring(0, i);
+  }
+
+
+  Future<void> removeWishlist({required String member_id, required String profile_id,}) async {
     final apiUrl = '${GlobalVariables.baseUrl}appadmin/api/remove_wishlist';
 
     final Map<String, dynamic> body = {
       'member_id': member_id,
       'profile_id': profile_id
     };
-    print("$member_id-$profile_id");
+    log("$member_id-$profile_id");
 
     try {
       final response = await http.post(
@@ -696,25 +226,15 @@ class _wishlistScreenState extends State<wishlistScreen> {
       );
 
       if (response.statusCode == 200) {
-        print(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Wishlist Remove Successfully"),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => HomeScreen(
-                      wishlistmemberid: member_id,
-                      interestedmemberid: member_id,
-                    )));
+        log(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Wishlist Remove Successfully"), duration: Duration(seconds: 2),),);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen(
+          wishlistmemberid: member_id, interestedmemberid: member_id,)));
       } else {
-        print('Error: ${response.statusCode}'); // Handle error response
+        log('Error: ${response.statusCode}'); // Handle error response
       }
     } catch (e) {
-      print('Exception: $e'); // Handle exceptions
+      log('Exception: $e'); // Handle exceptions
     }
   }
 }
